@@ -62,6 +62,8 @@ public class Handle {
 		am.openAudioConnection(vChan);
 		if(Handle.getVolume() < 0.05f || Handle.getVolume() > 0.45f)
 			Handle.setVolume(0.25f);
+		else
+			Handle.setVolume(volume);
 
 		StringBuilder ex = new StringBuilder("Now playing in #" + vChan.getName() + " "
 				+ "a song requested by **" + dj.getUsername() + "**!");
