@@ -73,9 +73,7 @@ public class AudioStream extends BufferedInputStream
 					}
 					catch (IOException e)
 					{
-						String err = e.getMessage();
-						if(err == null || !e.getMessage().equals("The pipe has been ended"))
-							e.printStackTrace();
+						e.printStackTrace();
 					}
 					finally
 					{
@@ -95,9 +93,7 @@ public class AudioStream extends BufferedInputStream
 						}
 						catch (IOException e)
 						{
-							String err = e.getMessage();
-							if(err == null || !e.getMessage().equals("The pipe is being closed"))
-								e.printStackTrace();
+							e.printStackTrace();
 						}
 					}
 				}

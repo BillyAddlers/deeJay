@@ -34,7 +34,7 @@ public class MyPlayer extends Player
 		}
 		catch (IOException e)
 		{
-			//e.printStackTrace();
+			e.printStackTrace();
 			Handle.skip();
 			throw new UnsupportedAudioFileException("The audio file specified is not supported.");
 		}
