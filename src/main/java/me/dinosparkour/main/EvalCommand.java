@@ -1,91 +1,106 @@
 package me.dinosparkour.main;
 
-import java.util.concurrent.*;
-
-import javax.script.*;
-
-import net.dv8tion.jda.Permission;
+import me.dinosparkour.utilities.Tasks;
+import net.dv8tion.jda.JDA;
+import net.dv8tion.jda.entities.Guild;
+import net.dv8tion.jda.entities.Message;
 import net.dv8tion.jda.entities.TextChannel;
+import net.dv8tion.jda.entities.User;
 import net.dv8tion.jda.events.message.guild.GuildMessageReceivedEvent;
 import net.dv8tion.jda.hooks.ListenerAdapter;
 
-import me.dinosparkour.main.BotInfo;
-import me.dinosparkour.utilities.Tasks;
+import javax.script.ScriptEngine;
+import javax.script.ScriptEngineManager;
+import javax.script.ScriptException;
+import java.util.concurrent.*;
 
 //Credits to DV8FromTheWorld and Almighty Alpaca
-public class EvalCommand extends ListenerAdapter {
+class EvalCommand extends ListenerAdapter {
 
-	private ScriptEngine engine;
+    private ScriptEngine engine;
 
-	public EvalCommand() {
-		engine = new ScriptEngineManager().getEngineByName("nashorn");
-		try {
-			engine.eval("var imports = new JavaImporter(java.io, java.lang, java.util);");
+    EvalCommand() {
+        engine = new ScriptEngineManager().getEngineByName("nashorn");
+        try {
+            engine.eval("var imports = new JavaImporter(java.io, java.lang, java.util);");
 
-		} catch (ScriptException ex) {
-			ex.printStackTrace();
-		}
-	}
+        } catch (ScriptException ex) {
+            ex.printStackTrace();
+        }
+    }
 
-	@Override
-	public void onGuildMessageReceived(GuildMessageReceivedEvent e) {
+    @Override
+    public void onGuildMessageReceived(GuildMessageReceivedEvent e) {
 
-		if(!e.getAuthor().getId().equals(BotInfo.getAuthorId())
-				|| !e.getMessage().getContent().startsWith(BotInfo.getPrefix() + "eval"))
-			return;
+        JDA jda = e.getJDA();
+        TextChannel channel = e.getChannel();
+        User author = e.getAuthor();
+        Message message = e.getMessage();
+        String msg = message.getContent();
+        Guild guild = e.getGuild();
 
-		TextChannel channel = e.getChannel();
-		String message = e.getMessage().getContent();
-		String prefix = BotInfo.getPrefix();
-		String input = message.replaceFirst(prefix + "eval", "");
+        String prefix = BotInfo.getPrefix();
 
-		engine.put("jda", e.getJDA());
-		engine.put("e", e);
-		engine.put("message", e.getMessage());
-		engine.put("guild", e.getGuild());
-		engine.put("channel", e.getChannel());
-		engine.put("author", e.getAuthor());
-		engine.put("input", input);
+        if(!author.getId().equals(BotInfo.getAuthorId())
+                || !msg.startsWith(prefix + "eval")
+                || !msg.contains(" ")) return;
 
-		ScheduledExecutorService service = Executors.newScheduledThreadPool(1);
-		ScheduledFuture<Object> future = service.schedule(new Callable<Object>() {
+        String input = msg.substring(msg.indexOf(' ')+1);
 
-			@Override
-			public Object call() throws Exception {
-				Object out = null;
-				out = engine.eval(
-						"(function() {" +
-								"with (imports) {\n" + input + "\n}" +
-						"})();");
+        engine.put("e", e);
+        engine.put("jda", jda);
+        engine.put("channel", channel);
+        engine.put("author", author);
+        engine.put("message", message);
+        engine.put("guild", guild);
+        engine.put("input", input);
 
-				if(out != null)
-					sendMessage(out.toString(), channel);
+        ScheduledExecutorService service = Executors.newScheduledThreadPool(1);
+        ScheduledFuture<?> future = service.schedule(() -> {
 
-				return null;
-			}                                                                           
-		}, 0, TimeUnit.MILLISECONDS);
+            Object out = null;
+            try {
+                out = engine.eval(
+                        "(function() {" +
+                                "with (imports) {\n" + input + "\n}" +
+                                "})();");
 
-		Thread script = new Thread("eval code"){
-			@Override
-			public void run() {
-				try {
-					future.get(3, TimeUnit.SECONDS);
+            } catch (Exception ex) {
+                sendMessage("**Exception**: ```\n" + ex.getLocalizedMessage() + "```", channel);
+                return;
+            }
 
-				} catch (TimeoutException  ex) {
-					future.cancel(true);
-					sendMessage("Your task exceeds the time limit!", channel);
+            String outputS;
+            if(out == null)
+                outputS = "`Task executed without errors.`";
+            else if(out.toString().contains("\n"))
+                outputS = "Output: ```\n" + out.toString() + "```";
+            else
+                outputS = "Output: `" + out.toString() + "`";
 
-				} catch (ExecutionException | InterruptedException  ex) {
-					String cause = ex.getMessage();
-					if(cause != null && channel.checkPermission(e.getJDA().getSelfInfo(), Permission.MESSAGE_WRITE))
-						sendMessage("```" + cause + "```", channel);
-				}
-			}
-		};
-		script.start();
-	}
+            sendMessage(outputS, channel);
 
-	private void sendMessage(String msg, TextChannel channel) {
-		Tasks.sendMessage(msg, channel);
-	}
+        }, 0, TimeUnit.MILLISECONDS);
+
+        Thread script = new Thread("eval code"){
+            @Override
+            public void run() {
+                try {
+                    future.get(3750, TimeUnit.MILLISECONDS);
+
+                } catch (TimeoutException  ex) {
+                    future.cancel(true);
+                    sendMessage("Your task exceeds the time limit!", channel);
+
+                } catch (ExecutionException | InterruptedException  ex) {
+                    ex.printStackTrace();
+                }
+            }
+        };
+        script.start();
+    }
+
+    private void sendMessage(String msg, TextChannel channel) {
+        Tasks.sendMessage(msg, channel);
+    }
 }

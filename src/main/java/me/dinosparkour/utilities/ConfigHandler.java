@@ -1,13 +1,11 @@
 package me.dinosparkour.utilities;
 
+import org.json.JSONObject;
+
 import java.io.File;
 import java.io.IOException;
-import java.io.UnsupportedEncodingException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-
-import org.json.JSONException;
-import org.json.JSONObject;
 
 public class ConfigHandler {
 
@@ -18,7 +16,7 @@ public class ConfigHandler {
 			try {
 				ConfigHandler.create();
 
-			} catch (JSONException | IOException ex) {
+			} catch (IOException ex) {
 				ex.printStackTrace();
 			}
 
@@ -30,23 +28,23 @@ public class ConfigHandler {
 		try {
 			object = ConfigHandler.load();
 
-		} catch (JSONException | IOException ex) {
+		} catch (IOException ex) {
 			ex.printStackTrace();
 		}
 
 		return object;
 	}
 
-	private static void create() throws JSONException, IOException {
+	private static void create() throws IOException {
 		Files.write(Paths.get(config.getPath()),
 				new JSONObject()
-				.put("email", "")
-				.put("password", "")
-				.put("prefix", ".")
-				.toString(4).getBytes());
+						.put("email", "")
+						.put("password", "")
+						.put("prefix", "!")
+						.toString(4).getBytes());
 	}
 
-	private static JSONObject load() throws JSONException, UnsupportedEncodingException, IOException {
+	private static JSONObject load() throws IOException {
 		JSONObject object = new JSONObject(new String(Files.readAllBytes(Paths.get(config.getPath())), "UTF-8"));
 
 		if(object.has("email") && object.has("password") && object.has("prefix"))

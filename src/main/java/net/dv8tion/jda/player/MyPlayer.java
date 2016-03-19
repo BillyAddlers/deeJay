@@ -1,26 +1,24 @@
 package net.dv8tion.jda.player;
 
-import java.io.IOException;
+import me.dinosparkour.voice.Handle;
+import net.dv8tion.jda.audio.player.Player;
 
 import javax.sound.sampled.AudioSystem;
 import javax.sound.sampled.UnsupportedAudioFileException;
-
-import net.dv8tion.jda.audio.player.Player;
-
-import me.dinosparkour.voice.Handle;
+import java.io.IOException;
 
 /**
  * Created by Austin on 3/4/2016.
  */
 public class MyPlayer extends Player
 {
-	protected String url;
-	protected boolean started = false;
-	protected boolean playing = false;
-	protected boolean paused = false;
-	protected boolean stopped = true;
+	private String url;
+	private boolean started = false;
+	private boolean playing = false;
+	private boolean paused = false;
+	private boolean stopped = true;
 
-	public MyPlayer(String url) throws UnsupportedAudioFileException
+	protected MyPlayer(String url) throws UnsupportedAudioFileException
 	{
 		this.url = url;
 		AudioSource source = new AudioSource(url);
@@ -85,11 +83,7 @@ public class MyPlayer extends Player
 			this.setAudioSource(AudioSystem.getAudioInputStream(source.asStream()));
 			play();
 		}
-		catch (IOException e)
-		{
-			e.printStackTrace();
-		}
-		catch (UnsupportedAudioFileException e)
+		catch (IOException | UnsupportedAudioFileException e)
 		{
 			e.printStackTrace();
 		}
@@ -119,7 +113,7 @@ public class MyPlayer extends Player
 		return stopped;
 	}
 
-	protected void reset()
+	private void reset()
 	{
 		started = false;
 		playing = false;

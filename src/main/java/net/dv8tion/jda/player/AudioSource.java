@@ -2,15 +2,18 @@ package net.dv8tion.jda.player;
 
 import java.io.*;
 import java.nio.file.FileAlreadyExistsException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
 
 /**
  * Created by Austin on 3/6/2016.
  */
-public class AudioSource
+class AudioSource
 {
     //Defined at the bottom of this file.
-    public static final List<String> YOUTUBE_DL_LAUNCH_ARGS =
+    private static final List<String> YOUTUBE_DL_LAUNCH_ARGS =
             Collections.unmodifiableList(Arrays.asList(
                     "python",               //Launch python executor
                     "./youtube-dl",         //youtube-dl program file
@@ -19,7 +22,7 @@ public class AudioSource
                     "--no-playlist",        //If the provided link is part of a Playlist, only grabs the video, not playlist too.
                     "-o", "-"               //Output, output to STDout
             ));
-    public static final List<String> FFMPEG_LAUNCH_ARGS =
+    private static final List<String> FFMPEG_LAUNCH_ARGS =
             Collections.unmodifiableList(Arrays.asList(
                     "ffmpeg",       //Program launch
                     "-i", "-",      //Input file, specifies to read from STDin (pipe)
@@ -32,12 +35,12 @@ public class AudioSource
     private final List<String> ytdlLaunchArgsF;
     private final List<String> ffmpegLaunchArgsF;
 
-    public AudioSource(String url)
+    AudioSource(String url)
     {
         this(url, null, null);
     }
 
-    public AudioSource(String url, List<String> ytdlLaunchArgs, List<String> ffmpegLaunchArgs)
+    private AudioSource(String url, List<String> ytdlLaunchArgs, List<String> ffmpegLaunchArgs)
     {
         if (url == null || url.isEmpty())
             throw new NullPointerException("String url provided to AudioSource was null or empty.");
@@ -46,7 +49,7 @@ public class AudioSource
         this.ffmpegLaunchArgsF = ffmpegLaunchArgs;
     }
 
-    public InputStream asStream()
+    InputStream asStream()
     {
         List<String> ytdlLaunchArgs = new ArrayList<>();
         List<String> ffmpegLaunchArgs = new ArrayList<>();
@@ -57,12 +60,14 @@ public class AudioSource
 
         if (ffmpegLaunchArgsF == null)
             ffmpegLaunchArgs.addAll(FFMPEG_LAUNCH_ARGS);
-        else
+        else {
+            assert ytdlLaunchArgsF != null;
             ffmpegLaunchArgs.addAll(ytdlLaunchArgsF);
+        }
 
         ytdlLaunchArgs.add(url);    //specifies the URL to download.
 
-        return new AudioStream(url,ytdlLaunchArgs, ffmpegLaunchArgs);
+        return new AudioStream(ytdlLaunchArgs, ffmpegLaunchArgs);
     }
 
     public File asFile(String path, boolean deleteIfExists) throws FileAlreadyExistsException, FileNotFoundException
@@ -98,8 +103,7 @@ public class AudioSource
         try
         {
             byte[] buffer = new byte[1024];
-            int amountRead = -1;
-            int i = 0;
+            int amountRead;
             while (!currentThread.isInterrupted() && ((amountRead = input.read(buffer)) > -1))
             {
                 fos.write(buffer, 0, amountRead);

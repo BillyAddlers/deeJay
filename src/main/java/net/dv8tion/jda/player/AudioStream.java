@@ -4,13 +4,12 @@ import java.io.BufferedInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.util.Arrays;
 import java.util.List;
 
 /**
  * Created by Austin on 3/6/2016.
  */
-public class AudioStream extends BufferedInputStream
+class AudioStream extends BufferedInputStream
 {
 	//Represent the processes that control the Python Youtube-dl and the FFmpeg program.
 	private Process ytdlProcess;
@@ -21,14 +20,13 @@ public class AudioStream extends BufferedInputStream
 	private Thread ytdlErrGobler;
 	private Thread ffmpegErrGobler;
 
-	private String url;
 	private List<String> ytdlLaunchArgs;
 	private List<String> ffmpegLaunchArgs;
 
-	protected AudioStream(String url, List<String> ytdlLaunchArgs, List<String> ffmpegLaunchArgs)
+	AudioStream(List<String> ytdlLaunchArgs, List<String> ffmpegLaunchArgs)
 	{
+		//noinspection ConstantConditions
 		super(null);
-		this.url = url;
 		this.ytdlLaunchArgs = ytdlLaunchArgs;
 		this.ffmpegLaunchArgs = ffmpegLaunchArgs;
 		setup();
@@ -64,7 +62,7 @@ public class AudioStream extends BufferedInputStream
 						toFFmpeg = ffmpegProcessF.getOutputStream();
 
 						byte[] buffer = new byte[1024];
-						int amountRead = -1;
+						int amountRead;
 						while (!isInterrupted() && ((amountRead = fromYTDL.read(buffer)) > -1))
 						{
 							toFFmpeg.write(buffer, 0, amountRead);
@@ -107,16 +105,16 @@ public class AudioStream extends BufferedInputStream
 
 					try
 					{
-						InputStream fromYTDL = null;
+						InputStream fromYTDL;
 
 						fromYTDL = ytdlProcessF.getErrorStream();
 						if (fromYTDL == null)
 							System.out.println("fromYTDL is null");
 
 						byte[] buffer = new byte[1024];
-						int amountRead = -1;
 						int i = 0;
-						while (!isInterrupted() && ((amountRead = fromYTDL.read(buffer)) > -1))
+						assert fromYTDL != null;
+						while (!isInterrupted() && (fromYTDL.read(buffer) > -1))
 						{
 							i++;
 							//System.out.println("ERR YTDL: " + new String(Arrays.copyOf(buffer, amountRead)));
@@ -136,16 +134,16 @@ public class AudioStream extends BufferedInputStream
 				{
 					try
 					{
-						InputStream fromFFmpeg = null;
+						InputStream fromFFmpeg;
 
 						fromFFmpeg = ffmpegProcessF.getErrorStream();
 						if (fromFFmpeg == null)
 							System.out.println("fromYTDL is null");
 
 						byte[] buffer = new byte[1024];
-						int amountRead = -1;
 						int i = 0;
-						while (!isInterrupted() && ((amountRead = fromFFmpeg.read(buffer)) > -1))
+						assert fromFFmpeg != null;
+						while (!isInterrupted() && (fromFFmpeg.read(buffer) > -1))
 						{
 							i++;
 							//System.out.println("ERR FFMPEG: " + new String(Arrays.copyOf(buffer, amountRead)));
