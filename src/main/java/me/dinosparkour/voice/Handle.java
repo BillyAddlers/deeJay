@@ -120,7 +120,7 @@ public class Handle {
 
     }
 
-    private static void resetVotes() {
+    static void resetVotes() {
         ignoredUsers.clear();
         skipVotes = 0;
     }

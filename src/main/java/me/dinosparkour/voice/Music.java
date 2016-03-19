@@ -91,7 +91,7 @@ public class Music extends ListenerAdapter {
 					}
 
 					if(author.getId().equals(Queue.getCurrentSong().getDj().getId())
-							|| Handle.getVotes() == 5) {
+							|| Handle.getVotes() == 2) {
 						sendMessage("Skipping current song!", channel);
 						Handle.skip();
 					} else {

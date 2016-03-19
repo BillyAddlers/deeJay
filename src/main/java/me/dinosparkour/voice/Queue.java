@@ -9,7 +9,7 @@ import net.dv8tion.jda.exceptions.PermissionException;
 import java.util.ArrayList;
 import java.util.List;
 
-class Queue {
+public class Queue {
 
     private static List<Song> playlist = new ArrayList<>();
 
@@ -63,5 +63,6 @@ class Queue {
 
     public static void reset() {
         playlist.clear();
+        Handle.resetVotes();
     }
 }
