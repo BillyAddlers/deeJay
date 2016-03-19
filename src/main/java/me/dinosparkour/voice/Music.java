@@ -96,7 +96,7 @@ public class Music extends ListenerAdapter {
 						Handle.skip();
 					} else {
 						Handle.addVote(author);
-						sendMessage("Amount of votes: **" + Handle.getVotes() + "** out of **5 needed**", channel);
+						sendMessage("Amount of votes: **" + Handle.getVotes() + "** out of **3 needed**", channel);
 					}
 				}
 				break;
