@@ -86,7 +86,7 @@ class EvalCommand extends ListenerAdapter {
             @Override
             public void run() {
                 try {
-                    future.get(3750, TimeUnit.MILLISECONDS);
+                    future.get(10, TimeUnit.SECONDS);
 
                 } catch (TimeoutException  ex) {
                     future.cancel(true);
