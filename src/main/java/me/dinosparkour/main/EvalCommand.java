@@ -73,10 +73,12 @@ class EvalCommand extends ListenerAdapter {
             String outputS;
             if(out == null)
                 outputS = "`Task executed without errors.`";
+            else if(out.toString().length() >= 1985 )
+                outputS = "The output is longer than 2000 chars!";
             else if(out.toString().contains("\n"))
-                outputS = "Output: ```\n" + out.toString() + "```";
+                outputS = "Output: ```\n" + out.toString().replace("`", "\\`") + "\n```";
             else
-                outputS = "Output: `" + out.toString() + "`";
+                outputS = "Output: ` " + out.toString().replace("`", "") + " `";
 
             sendMessage(outputS, channel);
 
