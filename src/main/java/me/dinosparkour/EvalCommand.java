@@ -8,18 +8,17 @@ import net.dv8tion.jda.entities.TextChannel;
 import net.dv8tion.jda.entities.User;
 import net.dv8tion.jda.events.message.guild.GuildMessageReceivedEvent;
 import net.dv8tion.jda.hooks.ListenerAdapter;
-import net.dv8tion.jda.player.Bot;
 
 import javax.script.ScriptEngine;
 import javax.script.ScriptEngineManager;
 import javax.script.ScriptException;
 import java.util.concurrent.*;
 
-public class EvalCommand extends ListenerAdapter {
+class EvalCommand extends ListenerAdapter {
 
     private final ScriptEngine engine;
 
-    public EvalCommand() {
+    EvalCommand() {
         engine = new ScriptEngineManager().getEngineByName("nashorn");
         try {
             engine.eval("var imports = new JavaImporter(java.io, java.lang, java.util);");
@@ -39,10 +38,10 @@ public class EvalCommand extends ListenerAdapter {
         String msg = message.getContent();
         Guild guild = e.getGuild();
 
-        String prefix = Bot.prefix;
+        String prefix = Main.prefix;
 
         //Specifically listen for the eval command
-        if (!author.getId().equals(Bot.AUTHOR_ID)
+        if (!author.getId().equals(Main.AUTHOR_ID)
                 || !msg.startsWith(prefix + "eval")
                 || !msg.contains(" ")) return;
 

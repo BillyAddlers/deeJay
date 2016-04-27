@@ -7,7 +7,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 
-public class Configurator {
+class Configurator {
 
     private static final File config = new File("config.json");
 
@@ -16,7 +16,7 @@ public class Configurator {
      *
      * @return JSONObject config
      */
-    public static JSONObject getConfig() {
+    static JSONObject getConfig() {
         if(!config.exists()) {
             try {
                 Configurator.create();
