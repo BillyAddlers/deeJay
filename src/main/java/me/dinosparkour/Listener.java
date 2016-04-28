@@ -232,7 +232,7 @@ class Listener extends ListenerAdapter {
                         if (!player.isPlaying())
                             player.play();
                     } else
-                        status.updateMessage("__An error occurred while resolving the requested song!__");
+                        status.updateMessage("```" + info.getError() + "```");
                 }
                 break;
 
