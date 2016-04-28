@@ -8,9 +8,9 @@ import java.util.ArrayList;
 
 class SongInfo {
 
-    private static ArrayList<String> skips = new ArrayList<>();
-    private User author;
-    private Guild guild;
+    private static final ArrayList<String> skips = new ArrayList<>();
+    private final User author;
+    private final Guild guild;
 
     SongInfo(User author, Guild guild) {
         this.author = author;
@@ -25,9 +25,10 @@ class SongInfo {
         return guild.getVoiceStatusOfUser(author).getChannel();
     }
 
-    Guild getGuild() {
-        return guild;
-    }
+    // UNUSED
+//    Guild getGuild() {
+//        return guild;
+//    }
 
     int getVotes() {
         return skips.size();

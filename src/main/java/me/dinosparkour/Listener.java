@@ -1,18 +1,23 @@
 package me.dinosparkour;
 
 import net.dv8tion.jda.JDA;
+import net.dv8tion.jda.Permission;
 import net.dv8tion.jda.entities.*;
 import net.dv8tion.jda.events.message.guild.GuildMessageReceivedEvent;
 import net.dv8tion.jda.hooks.ListenerAdapter;
 import net.dv8tion.jda.managers.AudioManager;
 import net.dv8tion.jda.player.MusicPlayer;
+import net.dv8tion.jda.player.Playlist;
 import net.dv8tion.jda.player.source.AudioInfo;
 import net.dv8tion.jda.player.source.AudioSource;
 import net.dv8tion.jda.player.source.AudioTimestamp;
 import net.dv8tion.jda.player.source.RemoteSource;
 import org.apache.commons.lang3.math.NumberUtils;
 
+import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
+import java.util.Set;
 
 import static me.dinosparkour.Main.AUTHOR_ID;
 import static me.dinosparkour.Main.musicQueue;
@@ -20,17 +25,60 @@ import static me.dinosparkour.Main.musicQueue;
 class Listener extends ListenerAdapter {
 
     private static final int SKIP_VOTES_REQUIRED = 4;
+    private static final Set<MusicPlayer> multiPlayers = new HashSet<>();
 
-    private static boolean isDj(User author, TextChannel channel, MusicPlayer player) {
+    private static boolean noDjRole(User author, TextChannel channel) {
         Guild guild = channel.getGuild();
         if (guild.getRolesForUser(author).stream().anyMatch(r ->
                 r.getName().equalsIgnoreCase("dj"))
-                || author.getId().equals(AUTHOR_ID)
-                || musicQueue.get(player.getCurrentAudioSource()).getAuthor() == author)
-            return true;
+                || author.getId().equals(AUTHOR_ID))
+            return false;
 
         channel.sendMessage(author.getAsMention() + ": You need to be a **DJ** to do that!");
+        return true;
+    }
+
+    private static boolean isCurrentDj(MusicPlayer player, User author) {
+        return musicQueue.get(player.getCurrentAudioSource()).getAuthor() == author;
+    }
+
+    private static boolean isIdle(MusicPlayer player, TextChannel channel) {
+        if (!player.isPlaying()) {
+            channel.sendMessage("The bot isn't playing music in this guild!");
+            return true;
+        }
         return false;
+    }
+
+    private static boolean isInNoChannel(User author, TextChannel channel) {
+        VoiceChannel vChan = channel.getGuild().getVoiceStatusOfUser(author).getChannel();
+        if (vChan == null) {
+            channel.sendMessage("You are not in a voice channel!");
+            return true;
+        }
+        return false;
+    }
+
+    private static void addSingleSource(AudioSource src, MusicPlayer player, Message status, Message message) {
+        TextChannel channel = (TextChannel) status.getChannel();
+        Guild guild = channel.getGuild();
+        User author = message.getAuthor();
+        AudioInfo srcInfo = src.getInfo();
+        if (srcInfo.getError() == null) {
+            if (channel.checkPermission(channel.getJDA().getSelfInfo(), Permission.MESSAGE_MANAGE))
+                message.deleteMessage();
+
+            player.getAudioQueue().add(src);
+            musicQueue.put(src, new SongInfo(author, guild));
+
+            status.updateMessage("```\n" + srcInfo.getTitle() + " has been added to the queue!\n=> Requested by "
+                    + author.getUsername().replace("`", "\\`") + "#" + author.getDiscriminator()
+                    + " - Position: [" + (player.getAudioQueue().size() - 1) + "]\n```");
+
+            if (!player.isPlaying())
+                player.play();
+        } else
+            status.updateMessage("```" + srcInfo.getError() + "```");
     }
 
     @Override
@@ -73,7 +121,7 @@ class Listener extends ListenerAdapter {
         String inputArgs = input.substring(arg0.length()).trim();
         switch (arg0.toLowerCase()) {
             case "volume":
-                if (!isDj(author, channel, player))
+                if (noDjRole(author, channel) && !isCurrentDj(player, author))
                     return;
 
                 if (inputArgs.equals("")) {
@@ -128,23 +176,24 @@ class Listener extends ListenerAdapter {
                 break;
 
             case "now":
+            case "current":
             case "playing":
             case "nowplaying":
-                if (!player.isPlaying())
-                    channel.sendMessage("The bot isn't playing music in this guild!");
-                else {
-                    AudioTimestamp currTime = player.getCurrentTimestamp();
-                    AudioInfo info = player.getCurrentAudioSource().getInfo();
-                    channel.sendMessage("**Song:** " + info.getTitle() + "\n"
-                            + (info.getError() != null ? "" :
-                            "**Time:**   [ " + currTime.getTimestamp() + " / " + info.getDuration().getTimestamp() + " ]"));
-                }
+                if (isIdle(player, channel))
+                    return;
+
+                AudioTimestamp currTime = player.getCurrentTimestamp();
+                AudioInfo info = player.getCurrentAudioSource().getInfo();
+                channel.sendMessage("**Song:** " + info.getTitle() + "\n"
+                        + (info.getError() != null ? "" :
+                        "**Time:**   [ " + currTime.getTimestamp() + " / " + info.getDuration().getTimestamp() + " ]"));
                 break;
 
-            //TODO !music join/leave
-
             case "forceskip":
-                if (!isDj(author, channel, player))
+                if (isIdle(player, channel))
+                    return;
+
+                if (noDjRole(author, channel) && !isCurrentDj(player, author))
                     return;
 
                 player.skipToNext();
@@ -152,10 +201,14 @@ class Listener extends ListenerAdapter {
                 break;
 
             case "skip":
+                if (isIdle(player, channel))
+                    return;
+
                 SongInfo s = musicQueue.get(player.getCurrentAudioSource());
-                if (author == s.getAuthor())
+                if (isCurrentDj(player, author)) {
+                    channel.sendMessage("The DJ has decided to skip!");
                     player.skipToNext();
-                else {
+                } else {
                     if (s.hasVoted(author)) {
                         channel.sendMessage("You have already voted to skip this song!");
                         return;
@@ -182,7 +235,10 @@ class Listener extends ListenerAdapter {
                 break;
 
             case "pause":
-                if (!isDj(author, channel, player))
+                if (isIdle(player, channel))
+                    return;
+
+                if (noDjRole(author, channel) && !isCurrentDj(player, author))
                     return;
 
                 player.pause();
@@ -190,11 +246,65 @@ class Listener extends ListenerAdapter {
                 break;
 
             case "stop":
-                if (!isDj(author, channel, player))
+                if (isIdle(player, channel))
+                    return;
+
+                if (noDjRole(author, channel) && !isCurrentDj(player, author))
                     return;
 
                 player.stop();
                 channel.sendMessage("Stopped the player.");
+                break;
+
+            case "multiqueue":
+                if (noDjRole(author, channel))
+                    return;
+
+                if (inputArgs.contains(" ")) {
+                    channel.sendMessage("Invalid value!");
+                    return;
+                }
+
+                switch (inputArgs.toLowerCase()) {
+                    case "":
+                        StringBuilder string = new StringBuilder("Multiqueue now set to ");
+                        if (multiPlayers.contains(player)) {
+                            multiPlayers.remove(player);
+                            channel.sendMessage(string.append("**false**.").toString());
+                        } else {
+                            multiPlayers.add(player);
+                            channel.sendMessage(string.append("**true**.").toString());
+                        }
+                        break;
+
+                    case "1":
+                    case "yes":
+                    case "true":
+                    case "allow":
+                        if (multiPlayers.contains(player))
+                            channel.sendMessage("Multiqueue is already enabled!");
+                        else {
+                            multiPlayers.add(player);
+                            channel.sendMessage("Multiqueue now set to **true**.");
+                        }
+                        break;
+
+                    case "0":
+                    case "no":
+                    case "false":
+                    case "deny":
+                        if (!multiPlayers.contains(player))
+                            channel.sendMessage("Multiqueue is already disabled!");
+                        else {
+                            multiPlayers.remove(player);
+                            channel.sendMessage("Multiqueue now set to **false**.");
+                        }
+                        break;
+
+                    default:
+                        channel.sendMessage("Invalid value!");
+                        break;
+                }
                 break;
 
             case "play":
@@ -214,25 +324,55 @@ class Listener extends ListenerAdapter {
 
                     }
                 else {
-                    VoiceChannel vChan = guild.getVoiceStatusOfUser(author).getChannel();
-                    if (vChan == null) {
-                        channel.sendMessage("You are not in a voice channel!");
+                    if (isInNoChannel(author, channel))
+                        return;
+
+                    if (musicQueue.entrySet().stream().anyMatch(entry -> entry.getValue().getAuthor() == author) && !multiPlayers.contains(player)) {
+                        channel.sendMessage("Multiqueue is disabled! You may only have 1 song queued at all times.");
                         return;
                     }
 
                     Message status = channel.sendMessage("*Processing audio source..*");
-                    //TODO add playlists
+                    addSingleSource(new RemoteSource(inputArgs), player, status, message);
+                }
+                break;
+
+            case "playlist":
+                if (isInNoChannel(author, channel))
+                    return;
+
+                if (!multiPlayers.contains(player)) {
+                    channel.sendMessage("This feature requires multiqueue to be enabled!\n"
+                            + "\nPlease use `" + prefix + "music multiqueue true`");
+                    return;
+                }
+
+                if (inputArgs.equals("")) {
+                    channel.sendMessage("Please select a playlist using `" + prefix + "music playlist (url)`");
+                    return;
+                }
+
+                Message playlistStatus = channel.sendMessage("*Processing playlist..*");
+                Playlist playlist = Playlist.getPlaylist(inputArgs);
+                List<AudioSource> sources = new LinkedList<>(playlist.getSources());
+
+                if (sources.size() <= 1) {
                     AudioSource src = new RemoteSource(inputArgs);
-                    AudioInfo info = src.getInfo();
-                    if (info.getError() == null) {
-                        musicQueue.put(src, new SongInfo(author, guild));
-                        player.getAudioQueue().add(src);
-                        status.updateMessage("*The requested song has been added to the queue!*  " +
-                                "**Position: [" + (player.getAudioQueue().size() - 1) + "]**");
-                        if (!player.isPlaying())
-                            player.play();
-                    } else
-                        status.updateMessage("```" + info.getError() + "```");
+                    addSingleSource(src, player, playlistStatus, message);
+                } else {
+                    final MusicPlayer fPlayer = player;
+                    sources.stream().forEachOrdered(audioSource -> {
+                        AudioInfo audioInfo = audioSource.getInfo();
+                        List<AudioSource> audioQueue = fPlayer.getAudioQueue();
+                        if (audioInfo.getError() == null) {
+                            musicQueue.put(audioSource, new SongInfo(author, guild));
+                            audioQueue.add(audioSource);
+                        } else
+                            channel.sendMessage("Detected error, skipping source. Error:```" + audioInfo.getError() + "```");
+                    });
+                    playlistStatus.updateMessage("Finished loading " + sources.size() + " songs into the queue!");
+                    if (player.isStopped())
+                        player.play();
                 }
                 break;
 
@@ -242,13 +382,15 @@ class Listener extends ListenerAdapter {
                 channel.sendMessage("```\n"
                         + prefix + "music\n"
                         + "    -> play (url)\n"
-                        + "    -> volume [0.0 - 1.0]\n"
+                        + "    -> playlist (playlist url) - [Requires multiqueue to be enabled]\n"
+                        + "    -> volume [0.0 - 1.0] - [Current Song Requester/DJ only]\n"
                         + "    -> queue\n"
                         + "    -> skip\n"
                         + "    -> nowplaying\n"
                         + "    -> pause - [DJ only]\n"
                         + "    -> stop - [DJ only]\n"
-                        + "    -> forceskip - [DJ only]\n```");
+                        + "    -> forceskip - [DJ only]\n"
+                        + "    -> multiqueue (true/false) - [DJ only]\n```");
                 break;
         }
     }

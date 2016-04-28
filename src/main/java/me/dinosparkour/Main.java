@@ -15,8 +15,8 @@ import java.util.Map;
 public class Main {
 
     static final String AUTHOR_ID = "98457903660269568";
+    static final Map<AudioSource, SongInfo> musicQueue = new HashMap<>();
     private static final float DEFAULT_VOLUME = 0.25f;
-    static Map<AudioSource, SongInfo> musicQueue = new HashMap<>();
     static String prefix;
 
     public static void main(String[] args) throws LoginException, InterruptedException, IOException {
@@ -36,28 +36,15 @@ public class Main {
             public void stop() {
                 super.stop();
                 am.closeAudioConnection();
-            }
-
-            @Override
-            public void skipToNext() {
-                super.skipToNext();
-
-                AudioSource src = super.getCurrentAudioSource();
-                if (src == null)
-                    am.closeAudioConnection();
-                else {
-                    VoiceChannel vChan = musicQueue.get(src).getVoiceChannel();
-                    if (vChan == null)
-                        skipToNext();
-                    else if (vChan != am.getConnectedChannel())
-                        am.moveAudioConnection(vChan);
-                }
+                musicQueue.remove(super.getPreviousAudioSource());
             }
 
             @Override
             public void playNext(boolean b) {
                 super.playNext(b);
+                super.setVolume(DEFAULT_VOLUME);
 
+                musicQueue.remove(super.getPreviousAudioSource());
                 AudioSource src = super.getCurrentAudioSource();
                 if (src == null)
                     am.closeAudioConnection();
@@ -73,6 +60,7 @@ public class Main {
             @Override
             public void play() {
                 super.play();
+                super.setVolume(DEFAULT_VOLUME);
 
                 VoiceChannel vChan = musicQueue.get(super.getCurrentAudioSource()).getVoiceChannel();
                 if (vChan == null)
