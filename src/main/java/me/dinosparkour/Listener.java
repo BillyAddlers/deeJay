@@ -28,14 +28,9 @@ class Listener extends ListenerAdapter {
     private static final Set<MusicPlayer> multiPlayers = new HashSet<>();
 
     private static boolean noDjRole(User author, TextChannel channel) {
-        Guild guild = channel.getGuild();
-        if (guild.getRolesForUser(author).stream().anyMatch(r ->
+        return !(channel.getGuild().getRolesForUser(author).stream().anyMatch(r ->
                 r.getName().equalsIgnoreCase("dj"))
-                || author.getId().equals(AUTHOR_ID))
-            return false;
-
-        channel.sendMessage(author.getAsMention() + ": You need to be a **DJ** to do that!");
-        return true;
+                || author.getId().equals(AUTHOR_ID));
     }
 
     private static boolean isCurrentDj(MusicPlayer player, User author) {
@@ -121,8 +116,10 @@ class Listener extends ListenerAdapter {
         String inputArgs = input.substring(arg0.length()).trim();
         switch (arg0.toLowerCase()) {
             case "volume":
-                if (noDjRole(author, channel) && !isCurrentDj(player, author))
+                if (noDjRole(author, channel) && !isCurrentDj(player, author)) {
+                    channel.sendMessage(author.getAsMention() + ": You need to be a **DJ** to do that!");
                     return;
+                }
 
                 if (inputArgs.equals("")) {
                     channel.sendMessage("Current volume: " + player.getVolume());
@@ -193,8 +190,10 @@ class Listener extends ListenerAdapter {
                 if (isIdle(player, channel))
                     return;
 
-                if (noDjRole(author, channel) && !isCurrentDj(player, author))
+                if (noDjRole(author, channel) && !isCurrentDj(player, author)) {
+                    channel.sendMessage(author.getAsMention() + ": You need to be a **DJ** to do that!");
                     return;
+                }
 
                 player.skipToNext();
                 channel.sendMessage("Skipped current song.");
@@ -238,8 +237,10 @@ class Listener extends ListenerAdapter {
                 if (isIdle(player, channel))
                     return;
 
-                if (noDjRole(author, channel) && !isCurrentDj(player, author))
+                if (noDjRole(author, channel) && !isCurrentDj(player, author)) {
+                    channel.sendMessage(author.getAsMention() + ": You need to be a **DJ** to do that!");
                     return;
+                }
 
                 player.pause();
                 channel.sendMessage("Paused the player.");
@@ -249,16 +250,20 @@ class Listener extends ListenerAdapter {
                 if (isIdle(player, channel))
                     return;
 
-                if (noDjRole(author, channel) && !isCurrentDj(player, author))
+                if (noDjRole(author, channel) && !isCurrentDj(player, author)) {
+                    channel.sendMessage(author.getAsMention() + ": You need to be a **DJ** to do that!");
                     return;
+                }
 
                 player.stop();
                 channel.sendMessage("Stopped the player.");
                 break;
 
             case "multiqueue":
-                if (noDjRole(author, channel))
+                if (noDjRole(author, channel)) {
+                    channel.sendMessage(author.getAsMention() + ": You need to be a **DJ** to do that!");
                     return;
+                }
 
                 if (inputArgs.contains(" ")) {
                     channel.sendMessage("Invalid value!");
