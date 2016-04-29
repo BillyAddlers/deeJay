@@ -25,10 +25,9 @@ class SongInfo {
         return guild.getVoiceStatusOfUser(author).getChannel();
     }
 
-    // UNUSED
-//    Guild getGuild() {
-//        return guild;
-//    }
+    String getGuildId() {
+        return guild.getId();
+    }
 
     int getVotes() {
         return skips.size();
