@@ -18,6 +18,8 @@ import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 import static me.dinosparkour.Main.AUTHOR_ID;
 import static me.dinosparkour.Main.musicQueue;
@@ -26,6 +28,8 @@ class Listener extends ListenerAdapter {
 
     private static final int SKIP_VOTES_REQUIRED = 4;
     private static final Set<MusicPlayer> multiPlayers = new HashSet<>();
+    private static final Set<String> playlistLoader = new HashSet<>();
+    private final ExecutorService threadPool = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors() + 1);
 
     private static boolean noDjRole(User author, TextChannel channel) {
         return !(channel.getGuild().getRolesForUser(author).stream().anyMatch(r ->
@@ -338,7 +342,7 @@ class Listener extends ListenerAdapter {
                     }
 
                     Message status = channel.sendMessage("*Processing audio source..*");
-                    addSingleSource(new RemoteSource(inputArgs), player, status, message);
+                    addSingleSource(Playlist.getPlaylist(inputArgs).getSources().get(0), player, status, message);
                 }
                 break;
 
@@ -365,19 +369,29 @@ class Listener extends ListenerAdapter {
                     AudioSource src = new RemoteSource(inputArgs);
                     addSingleSource(src, player, playlistStatus, message);
                 } else {
+                    if (playlistLoader.contains(guild.getId())) {
+                        playlistStatus.updateMessage("The player is already loading a playlist for this guild! Please be patient..");
+                        return;
+                    }
+
+                    playlistLoader.add(guild.getId());
+                    playlistStatus.updateMessage("*Attempting to load " + sources.size() + " songs, this may take a while..*");
+
                     final MusicPlayer fPlayer = player;
-                    sources.stream().forEachOrdered(audioSource -> {
-                        AudioInfo audioInfo = audioSource.getInfo();
-                        List<AudioSource> audioQueue = fPlayer.getAudioQueue();
-                        if (audioInfo.getError() == null) {
-                            musicQueue.put(audioSource, new SongInfo(author, guild));
-                            audioQueue.add(audioSource);
-                        } else
-                            channel.sendMessage("Detected error, skipping source. Error:```" + audioInfo.getError() + "```");
+                    threadPool.submit(() -> {
+                        sources.stream().forEachOrdered(audioSource -> {
+                            AudioInfo audioInfo = audioSource.getInfo();
+                            List<AudioSource> audioQueue = fPlayer.getAudioQueue();
+                            if (audioInfo.getError() == null) {
+                                musicQueue.put(audioSource, new SongInfo(author, guild));
+                                audioQueue.add(audioSource);
+                                if (fPlayer.isStopped())
+                                    fPlayer.play();
+                            } else
+                                channel.sendMessage("Detected error, skipping 1 source. Error:```" + audioInfo.getError() + "```");
+                        });
+                        playlistLoader.remove(guild.getId());
                     });
-                    playlistStatus.updateMessage("Finished loading " + sources.size() + " songs into the queue!");
-                    if (player.isStopped())
-                        player.play();
                 }
                 break;
 

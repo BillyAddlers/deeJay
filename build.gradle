@@ -5,10 +5,14 @@ plugins {
 
 repositories {
     jcenter()
+
+    maven {
+        url "http://dl.bintray.com/dv8fromtheworld/maven"
+    }
 }
 
 dependencies {
-    compile fileTree(dir: 'libs', include: '*.jar')
+    compile 'net.dv8tion:jda-player:0.2.1_1'
     compile 'net.dv8tion:JDA:2.0.0_251'
 }
 
