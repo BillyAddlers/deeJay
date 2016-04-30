@@ -38,6 +38,6 @@ class SongInfo {
     }
 
     boolean hasVoted(User u) {
-        return skips.stream().filter(uId -> u.getId().equals(uId)).findAny().orElse(null) != null;
+        return skips.stream().anyMatch(uId -> u.getId().equals(uId));
     }
 }
