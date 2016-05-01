@@ -58,8 +58,8 @@ class Listener extends ListenerAdapter {
         return false;
     }
 
-    private static void addSingleSource(AudioSource src, MusicPlayer player, Message status, Message message) {
-        TextChannel channel = (TextChannel) status.getChannel();
+    private static void addSingleSource(AudioSource src, MusicPlayer player, Message message) {
+        TextChannel channel = (TextChannel) message.getChannel();
         Guild guild = channel.getGuild();
         User author = message.getAuthor();
         AudioInfo srcInfo = src.getInfo();
@@ -70,14 +70,14 @@ class Listener extends ListenerAdapter {
             player.getAudioQueue().add(src);
             musicQueue.put(src, new SongInfo(author, guild));
 
-            status.updateMessage("```\n" + srcInfo.getTitle() + " has been added to the queue!\n=> Requested by "
+            channel.sendMessage("```\n" + srcInfo.getTitle() + " has been added to the queue!\n=> Requested by "
                     + author.getUsername().replace("`", "\\`") + "#" + author.getDiscriminator()
                     + " - Position: [" + (player.getAudioQueue().size() - 1) + "]\n```");
 
             if (!player.isPlaying())
                 player.play();
         } else
-            status.updateMessage("```" + srcInfo.getError() + "```");
+            channel.sendMessage("```" + srcInfo.getError() + "```");
     }
 
     @Override
@@ -343,13 +343,14 @@ class Listener extends ListenerAdapter {
                         return;
                     }
 
-                    AudioSource src = Playlist.getPlaylist(inputArgs).getSources().get(0);
-                    if (src.getInfo().isLive())
+                    channel.sendTyping();
+                    AudioSource src = new RemoteSource(inputArgs);
+                    if (src.getInfo().getError() != null)
+                        channel.sendMessage("An error occurred!```" + src.getInfo().getError() + "```");
+                    else if (src.getInfo().isLive())
                         channel.sendMessage("Cannot play livestreams! Sorry for the inconvenience.");
-                    else {
-                        Message status = channel.sendMessage("*Processing audio source..*");
-                        addSingleSource(src, player, status, message);
-                    }
+                    else
+                        addSingleSource(src, player, message);
                 }
                 break;
 
@@ -374,7 +375,7 @@ class Listener extends ListenerAdapter {
 
                 if (sources.size() <= 1) {
                     AudioSource src = new RemoteSource(inputArgs);
-                    addSingleSource(src, player, playlistStatus, message);
+                    addSingleSource(src, player, message);
                 } else {
                     if (playlistLoader.contains(guild.getId())) {
                         playlistStatus.updateMessage("The player is already loading a playlist for this guild! Please be patient..");
