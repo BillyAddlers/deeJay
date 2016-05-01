@@ -12,6 +12,8 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
+import static me.dinosparkour.SongInfo.skips;
+
 public class Main {
 
     static final String AUTHOR_ID = "98457903660269568";
@@ -44,6 +46,7 @@ public class Main {
                 super.playNext(b);
                 super.setVolume(DEFAULT_VOLUME);
 
+                skips.clear();
                 musicQueue.remove(super.getPreviousAudioSource());
                 AudioSource src = super.getCurrentAudioSource();
                 if (src == null)

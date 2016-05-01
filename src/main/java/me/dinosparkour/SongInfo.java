@@ -8,7 +8,7 @@ import java.util.ArrayList;
 
 class SongInfo {
 
-    private static final ArrayList<String> skips = new ArrayList<>();
+    static final ArrayList<String> skips = new ArrayList<>();
     private final User author;
     private final Guild guild;
 
