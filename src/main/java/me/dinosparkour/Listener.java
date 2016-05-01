@@ -343,8 +343,13 @@ class Listener extends ListenerAdapter {
                         return;
                     }
 
-                    Message status = channel.sendMessage("*Processing audio source..*");
-                    addSingleSource(Playlist.getPlaylist(inputArgs).getSources().get(0), player, status, message);
+                    AudioSource src = Playlist.getPlaylist(inputArgs).getSources().get(0);
+                    if (src.getInfo().isLive())
+                        channel.sendMessage("Cannot play livestreams! Sorry for the inconvenience.");
+                    else {
+                        Message status = channel.sendMessage("*Processing audio source..*");
+                        addSingleSource(src, player, status, message);
+                    }
                 }
                 break;
 
@@ -383,6 +388,11 @@ class Listener extends ListenerAdapter {
                     threadPool.submit(() -> {
                         sources.stream().forEachOrdered(audioSource -> {
                             AudioInfo audioInfo = audioSource.getInfo();
+                            if (audioInfo.isLive()) {
+                                channel.sendMessage("Cannot play livestreams! Sorry for the inconvenience.");
+                                return;
+                            }
+
                             List<AudioSource> audioQueue = fPlayer.getAudioQueue();
                             if (audioInfo.getError() == null) {
                                 musicQueue.put(audioSource, new SongInfo(author, guild));
