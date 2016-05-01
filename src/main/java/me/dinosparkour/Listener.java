@@ -104,7 +104,7 @@ class Listener extends ListenerAdapter {
         String command = msgContent.split("\\s+")[0].substring(prefix.length());
 
         //Specifically listen for the music command
-        if (!command.equals("music"))
+        if (!command.equalsIgnoreCase("music"))
             return;
 
         String input = msgContent.substring(prefix.length() + command.length()).trim();
