@@ -8,8 +8,8 @@ repositories {
 }
 
 dependencies {
-    compile 'net.dv8tion:jda-player:0.2.1_4'
-    compile 'net.dv8tion:JDA:2.0.0_254'
+    compile 'net.dv8tion:jda-player:0.2.1_5'
+    compile 'net.dv8tion:JDA:2.0.0_255'
 }
 
 //noinspection GroovyUnusedAssignment
