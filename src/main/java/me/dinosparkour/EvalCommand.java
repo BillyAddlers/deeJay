@@ -16,6 +16,7 @@ import java.util.concurrent.*;
 
 class EvalCommand extends ListenerAdapter {
 
+    private final ScheduledExecutorService eval = Executors.newScheduledThreadPool(1);
     private final ScriptEngine engine;
 
     EvalCommand() {
@@ -48,6 +49,7 @@ class EvalCommand extends ListenerAdapter {
         String input = msg.substring(msg.indexOf(' ') + 1);
 
         engine.put("e", e);
+        engine.put("event", e);
         engine.put("api", jda);
         engine.put("jda", jda);
         engine.put("channel", channel);
@@ -57,8 +59,7 @@ class EvalCommand extends ListenerAdapter {
         engine.put("input", input);
         engine.put("mentionedUsers", message.getMentionedUsers());
 
-        ScheduledExecutorService service = Executors.newScheduledThreadPool(1);
-        ScheduledFuture<?> future = service.schedule(() -> {
+        ScheduledFuture<?> future = eval.schedule(() -> {
 
             Object out = null;
             try {
@@ -84,23 +85,16 @@ class EvalCommand extends ListenerAdapter {
 
         }, 0, TimeUnit.MILLISECONDS);
 
-        Thread script = new Thread("eval code") {
+        try {
+            future.get(10, TimeUnit.SECONDS);
 
-            @Override
-            public void run() {
-                try {
-                    future.get(10, TimeUnit.SECONDS);
+        } catch (TimeoutException ex) {
+            future.cancel(true);
+            sendMessage("Your task exceeds the time limit!", e);
 
-                } catch (TimeoutException ex) {
-                    future.cancel(true);
-                    sendMessage("Your task exceeds the time limit!", e);
-
-                } catch (ExecutionException | InterruptedException ex) {
-                    ex.printStackTrace();
-                }
-            }
-        };
-        script.start();
+        } catch (ExecutionException | InterruptedException ex) {
+            ex.printStackTrace();
+        }
     }
 
     private void sendMessage(String msg, GuildMessageReceivedEvent e) {
