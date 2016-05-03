@@ -42,7 +42,7 @@ class EvalCommand extends ListenerAdapter {
 
         //Specifically listen for the eval command
         if (!author.getId().equals(Main.AUTHOR_ID)
-                || !msg.startsWith(prefix + "eval")
+                || !msg.toLowerCase().startsWith(prefix + "eval")
                 || !msg.contains(" ")) return;
 
         String input = msg.substring(msg.indexOf(' ') + 1);
