@@ -32,9 +32,9 @@ class Listener extends ListenerAdapter {
     private final ExecutorService threadPool = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors() + 1);
 
     private static boolean noDjRole(User author, TextChannel channel) {
-        return !(channel.getGuild().getRolesForUser(author).stream().anyMatch(r ->
-                r.getName().equalsIgnoreCase("dj"))
-                || author.getId().equals(AUTHOR_ID));
+        return !channel.getGuild().getRolesForUser(author).stream().anyMatch(r -> r.getName().equalsIgnoreCase("dj"))
+                && !author.getId().equals(AUTHOR_ID)
+                && channel.getGuild().getOwner() != author;
     }
 
     private static boolean isCurrentDj(MusicPlayer player, User author) {
