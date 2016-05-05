@@ -228,8 +228,10 @@ class Listener extends ListenerAdapter {
                 break;
 
             case "reset":
-                if (!author.getId().equals(Main.AUTHOR_ID))
+                if (noDjRole(author, channel)) {
+                    channel.sendMessage("I don't think so, " + author.getUsername().replace("`", "\\`") + ".");
                     return;
+                }
 
                 player.stop();
                 player = Main.createPlayer(am);
@@ -422,7 +424,8 @@ class Listener extends ListenerAdapter {
                         + "    -> pause - [DJ only]\n"
                         + "    -> stop - [DJ only]\n"
                         + "    -> forceskip - [DJ only]\n"
-                        + "    -> multiqueue (true/false) - [DJ only]\n```");
+                        + "    -> multiqueue (true/false) - [DJ only]\n"
+                        + "    -> reset - [DJ only]\n```");
                 break;
         }
     }
