@@ -38,7 +38,7 @@ class Listener extends ListenerAdapter {
     }
 
     private static boolean isCurrentDj(MusicPlayer player, User author) {
-        return musicQueue.get(player.getCurrentAudioSource()).getAuthor() == author;
+        return !musicQueue.isEmpty() && musicQueue.get(player.getCurrentAudioSource()).getAuthor() == author;
     }
 
     private static boolean isIdle(MusicPlayer player, TextChannel channel) {
