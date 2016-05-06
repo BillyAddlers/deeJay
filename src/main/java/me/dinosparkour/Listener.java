@@ -14,18 +14,13 @@ import net.dv8tion.jda.player.source.AudioTimestamp;
 import net.dv8tion.jda.player.source.RemoteSource;
 import org.apache.commons.lang3.math.NumberUtils;
 
-import java.util.HashSet;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-import static me.dinosparkour.Main.AUTHOR_ID;
-import static me.dinosparkour.Main.musicQueue;
-
 class Listener extends ListenerAdapter {
 
+    static final Map<AudioSource, SongInfo> musicQueue = new HashMap<>();
     private static final int SKIP_VOTES_REQUIRED = 4;
     private static final Set<MusicPlayer> multiPlayers = new HashSet<>();
     private static final Set<String> playlistLoader = new HashSet<>();
@@ -33,7 +28,7 @@ class Listener extends ListenerAdapter {
 
     private static boolean noDjRole(User author, TextChannel channel) {
         return !channel.getGuild().getRolesForUser(author).stream().anyMatch(r -> r.getName().equalsIgnoreCase("dj"))
-                && !author.getId().equals(AUTHOR_ID)
+                && !author.getId().equals(Main.AUTHOR_ID)
                 && channel.getGuild().getOwner() != author;
     }
 

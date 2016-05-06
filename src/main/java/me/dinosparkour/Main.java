@@ -9,15 +9,10 @@ import org.json.JSONObject;
 
 import javax.security.auth.login.LoginException;
 import java.io.IOException;
-import java.util.HashMap;
-import java.util.Map;
-
-import static me.dinosparkour.SongInfo.skips;
 
 public class Main {
 
     static final String AUTHOR_ID = "98457903660269568";
-    static final Map<AudioSource, SongInfo> musicQueue = new HashMap<>();
     private static final float DEFAULT_VOLUME = 0.25f;
     static String prefix;
 
@@ -38,7 +33,7 @@ public class Main {
             public void stop() {
                 super.stop();
                 am.closeAudioConnection();
-                musicQueue.remove(super.getPreviousAudioSource());
+                Listener.musicQueue.remove(super.getPreviousAudioSource());
             }
 
             @Override
@@ -46,13 +41,13 @@ public class Main {
                 super.playNext(b);
                 super.setVolume(DEFAULT_VOLUME);
 
-                skips.clear();
-                musicQueue.remove(super.getPreviousAudioSource());
+                SongInfo.skips.clear();
+                Listener.musicQueue.remove(super.getPreviousAudioSource());
                 AudioSource src = super.getCurrentAudioSource();
                 if (src == null)
                     am.closeAudioConnection();
                 else {
-                    VoiceChannel vChan = musicQueue.get(src).getVoiceChannel();
+                    VoiceChannel vChan = Listener.musicQueue.get(src).getVoiceChannel();
                     if (vChan == null)
                         playNext(b);
                     else if (vChan != am.getConnectedChannel())
@@ -65,7 +60,7 @@ public class Main {
                 super.play();
                 super.setVolume(DEFAULT_VOLUME);
 
-                VoiceChannel vChan = musicQueue.get(super.getCurrentAudioSource()).getVoiceChannel();
+                VoiceChannel vChan = Listener.musicQueue.get(super.getCurrentAudioSource()).getVoiceChannel();
                 if (vChan == null)
                     super.skipToNext();
                 else {
