@@ -184,10 +184,14 @@ class Listener extends ListenerAdapter {
                     return;
 
                 AudioTimestamp currTime = player.getCurrentTimestamp();
-                AudioInfo info = player.getCurrentAudioSource().getInfo();
+                AudioSource currSrc = player.getCurrentAudioSource();
+                AudioInfo info = currSrc.getInfo();
+                User currDj = musicQueue.get(currSrc).getAuthor();
                 channel.sendMessage("**Song:** " + info.getTitle() + "\n"
                         + (info.getError() != null ? "" :
-                        "**Time:**   [ " + currTime.getTimestamp() + " / " + info.getDuration().getTimestamp() + " ]"));
+                        "**Time:** [ " + currTime.getTimestamp() + " / " + info.getDuration().getTimestamp() + " ]\n")
+                        + "**DJ:**      " + currDj.getUsername().replace("~~", "\\~\\~").replace("_", "\\_").replace("*", "\\*").replace("`", "\\`")
+                        + "#" + currDj.getDiscriminator());
                 break;
 
             case "forceskip":
