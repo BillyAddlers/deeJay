@@ -291,8 +291,10 @@ class Listener extends ListenerAdapter {
 
                     case "1":
                     case "yes":
+                    case "on":
                     case "true":
                     case "allow":
+                    case "enable":
                         if (multiPlayers.contains(player))
                             channel.sendMessage("Multiqueue is already enabled!");
                         else {
@@ -303,8 +305,10 @@ class Listener extends ListenerAdapter {
 
                     case "0":
                     case "no":
+                    case "off":
                     case "false":
                     case "deny":
+                    case "disable":
                         if (!multiPlayers.contains(player))
                             channel.sendMessage("Multiqueue is already disabled!");
                         else {
