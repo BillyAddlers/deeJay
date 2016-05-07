@@ -22,7 +22,7 @@ class Listener extends ListenerAdapter {
 
     static final Map<AudioSource, SongInfo> musicQueue = new HashMap<>();
     private static final int SKIP_VOTES_REQUIRED = 4;
-    private static final Set<MusicPlayer> multiPlayers = new HashSet<>();
+    private static final Set<String> multiqueueGuilds = new HashSet<>();
     private static final Set<String> playlistLoader = new HashSet<>();
     private final ExecutorService threadPool = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors() + 1);
 
@@ -280,11 +280,11 @@ class Listener extends ListenerAdapter {
                 switch (inputArgs.toLowerCase()) {
                     case "":
                         StringBuilder string = new StringBuilder("Multiqueue now set to ");
-                        if (multiPlayers.contains(player)) {
-                            multiPlayers.remove(player);
+                        if (multiqueueGuilds.contains(guild.getId())) {
+                            multiqueueGuilds.remove(guild.getId());
                             channel.sendMessage(string.append("**false**.").toString());
                         } else {
-                            multiPlayers.add(player);
+                            multiqueueGuilds.add(guild.getId());
                             channel.sendMessage(string.append("**true**.").toString());
                         }
                         break;
@@ -295,10 +295,10 @@ class Listener extends ListenerAdapter {
                     case "true":
                     case "allow":
                     case "enable":
-                        if (multiPlayers.contains(player))
+                        if (multiqueueGuilds.contains(guild.getId()))
                             channel.sendMessage("Multiqueue is already enabled!");
                         else {
-                            multiPlayers.add(player);
+                            multiqueueGuilds.add(guild.getId());
                             channel.sendMessage("Multiqueue now set to **true**.");
                         }
                         break;
@@ -309,10 +309,10 @@ class Listener extends ListenerAdapter {
                     case "false":
                     case "deny":
                     case "disable":
-                        if (!multiPlayers.contains(player))
+                        if (!multiqueueGuilds.contains(guild.getId()))
                             channel.sendMessage("Multiqueue is already disabled!");
                         else {
-                            multiPlayers.remove(player);
+                            multiqueueGuilds.remove(guild.getId());
                             channel.sendMessage("Multiqueue now set to **false**.");
                         }
                         break;
@@ -343,7 +343,8 @@ class Listener extends ListenerAdapter {
                     if (isInNoChannel(author, channel))
                         return;
 
-                    if (musicQueue.entrySet().stream().anyMatch(entry -> entry.getValue().getAuthor() == author) && !multiPlayers.contains(player)) {
+                    if (musicQueue.entrySet().stream().anyMatch(entry -> entry.getValue().getAuthor() == author)
+                            && !multiqueueGuilds.contains(guild.getId())) {
                         channel.sendMessage("Multiqueue is disabled! You may only have 1 song queued at all times.");
                         return;
                     }
@@ -363,7 +364,7 @@ class Listener extends ListenerAdapter {
                 if (isInNoChannel(author, channel))
                     return;
 
-                if (!multiPlayers.contains(player)) {
+                if (!multiqueueGuilds.contains(guild.getId())) {
                     channel.sendMessage("This feature requires multiqueue to be enabled!\n"
                             + "\nPlease use `" + prefix + "music multiqueue true`");
                     return;
