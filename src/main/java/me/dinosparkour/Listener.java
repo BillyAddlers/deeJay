@@ -353,7 +353,7 @@ class Listener extends ListenerAdapter {
                     channel.sendTyping();
                     AudioSource src = new RemoteSource(inputArgs);
                     if (src.getInfo().getError() != null)
-                        channel.sendMessage("An error occurred!```" + src.getInfo().getError() + "```");
+                        channel.sendMessage("An error occurred! ```\n" + src.getInfo().getError() + "```");
                     else if (src.getInfo().isLive())
                         channel.sendMessage("Cannot play livestreams! Sorry for the inconvenience.");
                     else
@@ -408,7 +408,7 @@ class Listener extends ListenerAdapter {
                                 if (fPlayer.isStopped())
                                     fPlayer.play();
                             } else
-                                channel.sendMessage("Detected error, skipping 1 source. Error:```" + audioInfo.getError() + "```");
+                                channel.sendMessage("Detected error, skipping 1 source. Error: ```\n" + audioInfo.getError() + "```");
                         });
                         playlistLoader.remove(guild.getId());
                     });
