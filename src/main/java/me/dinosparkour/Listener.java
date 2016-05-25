@@ -237,7 +237,7 @@ class Listener extends ListenerAdapter {
                 am.closeAudioConnection();
                 am.setSendingHandler(player);
                 multiqueueGuilds.remove(guild.getId());
-                musicQueue.entrySet().stream().filter(entry -> entry.getValue().getGuildId().equals(guild.getId())).map(Map.Entry::getKey).forEach(musicQueue::remove);
+                musicQueue.entrySet().removeIf(entry -> entry.getValue().getGuildId().equals(guild.getId()));
                 channel.sendMessage("Completely reset the music player.");
                 break;
 
