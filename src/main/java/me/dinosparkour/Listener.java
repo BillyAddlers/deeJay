@@ -475,7 +475,9 @@ class Listener extends ListenerAdapter {
             case "deny":
             case "disable":
                 return false;
+
+            default:
+                throw new IllegalArgumentException("Invalid value for a boolean.");
         }
-        throw new IllegalArgumentException("Invalid value for a boolean.");
     }
 }
