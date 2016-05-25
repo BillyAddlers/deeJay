@@ -1,6 +1,5 @@
 package me.dinosparkour;
 
-import com.sun.javaws.exceptions.InvalidArgumentException;
 import net.dv8tion.jda.JDA;
 import net.dv8tion.jda.Permission;
 import net.dv8tion.jda.entities.*;
@@ -276,7 +275,7 @@ class Listener extends ListenerAdapter {
                             }
                         }
 
-                    } catch (InvalidArgumentException ex) {
+                    } catch (IllegalArgumentException ex) {
                         channel.sendMessage("Invalid value!");
                     }
                 break;
@@ -341,7 +340,7 @@ class Listener extends ListenerAdapter {
                             }
                         }
 
-                    } catch (InvalidArgumentException ex) {
+                    } catch (IllegalArgumentException ex) {
                         channel.sendMessage("Invalid value!");
                     }
                 break;
@@ -458,7 +457,7 @@ class Listener extends ListenerAdapter {
         }
     }
 
-    private boolean parseInput(String inputArgs) throws InvalidArgumentException {
+    private boolean parseInput(String inputArgs) throws IllegalArgumentException {
         switch (inputArgs.toLowerCase()) {
             case "1":
             case "yes":
