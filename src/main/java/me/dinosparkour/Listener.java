@@ -1,5 +1,6 @@
 package me.dinosparkour;
 
+import com.sun.javaws.exceptions.InvalidArgumentException;
 import net.dv8tion.jda.JDA;
 import net.dv8tion.jda.Permission;
 import net.dv8tion.jda.entities.*;
@@ -77,6 +78,8 @@ class Listener extends ListenerAdapter {
 
     @Override
     public void onGuildMessageReceived(GuildMessageReceivedEvent e) {
+        String NO_DJ = "You need to be a **DJ** to do that!";
+
         JDA jda = e.getJDA();
         Guild guild = e.getGuild();
         TextChannel channel = e.getChannel();
@@ -116,7 +119,7 @@ class Listener extends ListenerAdapter {
         switch (arg0.toLowerCase()) {
             case "volume":
                 if (noDjRole(author, channel) && !isCurrentDj(player, author)) {
-                    channel.sendMessage(author.getAsMention() + ": You need to be a **DJ** to do that!");
+                    channel.sendMessage(NO_DJ);
                     return;
                 }
 
@@ -194,7 +197,7 @@ class Listener extends ListenerAdapter {
                     return;
 
                 if (noDjRole(author, channel) && !isCurrentDj(player, author)) {
-                    channel.sendMessage(author.getAsMention() + ": You need to be a **DJ** to do that!");
+                    channel.sendMessage(NO_DJ);
                     return;
                 }
 
@@ -241,12 +244,49 @@ class Listener extends ListenerAdapter {
                 channel.sendMessage("Completely reset the music player.");
                 break;
 
+            case "shuffle":
+                if (noDjRole(author, channel)) {
+                    channel.sendMessage(NO_DJ);
+                    return;
+                }
+
+                boolean shuffle = player.isShuffle();
+                if (inputArgs.equals("")) {
+                    player.setShuffle(!shuffle);
+                    if (shuffle)
+                        channel.sendMessage("Disabled shuffling!");
+                    else
+                        channel.sendMessage("Enabled shuffling!");
+                } else
+                    try {
+                        boolean b = parseInput(inputArgs);
+                        if (b)
+                            if (shuffle)
+                                channel.sendMessage("Shuffling is already enabled!");
+                            else {
+                                player.setShuffle(true);
+                                channel.sendMessage("Shuffling is now set to **true**.");
+                            }
+                        else {
+                            if (!shuffle)
+                                channel.sendMessage("Shuffling is already disabled!");
+                            else {
+                                player.setShuffle(false);
+                                channel.sendMessage("Shuffling is now set to **false**.");
+                            }
+                        }
+
+                    } catch (InvalidArgumentException ex) {
+                        channel.sendMessage("Invalid value!");
+                    }
+                break;
+
             case "pause":
                 if (isIdle(player, channel))
                     return;
 
                 if (noDjRole(author, channel) && !isCurrentDj(player, author)) {
-                    channel.sendMessage(author.getAsMention() + ": You need to be a **DJ** to do that!");
+                    channel.sendMessage(NO_DJ);
                     return;
                 }
 
@@ -259,7 +299,7 @@ class Listener extends ListenerAdapter {
                     return;
 
                 if (noDjRole(author, channel) && !isCurrentDj(player, author)) {
-                    channel.sendMessage(author.getAsMention() + ": You need to be a **DJ** to do that!");
+                    channel.sendMessage(NO_DJ);
                     return;
                 }
 
@@ -269,59 +309,41 @@ class Listener extends ListenerAdapter {
 
             case "multiqueue":
                 if (noDjRole(author, channel)) {
-                    channel.sendMessage(author.getAsMention() + ": You need to be a **DJ** to do that!");
+                    channel.sendMessage(NO_DJ);
                     return;
                 }
 
-                if (inputArgs.contains(" ")) {
-                    channel.sendMessage("Invalid value!");
-                    return;
-                }
-
-                switch (inputArgs.toLowerCase()) {
-                    case "":
-                        StringBuilder string = new StringBuilder("Multiqueue now set to ");
-                        if (multiqueueGuilds.contains(guild.getId())) {
-                            multiqueueGuilds.remove(guild.getId());
-                            channel.sendMessage(string.append("**false**.").toString());
-                        } else {
-                            multiqueueGuilds.add(guild.getId());
-                            channel.sendMessage(string.append("**true**.").toString());
-                        }
-                        break;
-
-                    case "1":
-                    case "yes":
-                    case "on":
-                    case "true":
-                    case "allow":
-                    case "enable":
-                        if (multiqueueGuilds.contains(guild.getId()))
-                            channel.sendMessage("Multiqueue is already enabled!");
+                boolean isMulti = multiqueueGuilds.contains(guild.getId());
+                if (inputArgs.equals(""))
+                    if (isMulti) {
+                        multiqueueGuilds.remove(guild.getId());
+                        channel.sendMessage("Disabled the multiqueue!");
+                    } else {
+                        multiqueueGuilds.add(guild.getId());
+                        channel.sendMessage("Enabled the multiqueue!");
+                    }
+                else
+                    try {
+                        boolean b = parseInput(inputArgs);
+                        if (b)
+                            if (isMulti)
+                                channel.sendMessage("Multiqueue is already enabled!");
+                            else {
+                                multiqueueGuilds.add(guild.getId());
+                                channel.sendMessage("Multiqueue is now set to **true**.");
+                            }
                         else {
-                            multiqueueGuilds.add(guild.getId());
-                            channel.sendMessage("Multiqueue now set to **true**.");
+                            if (!isMulti)
+                                channel.sendMessage("Multiqueue is already disabled!");
+                            else {
+                                multiqueueGuilds.remove(guild.getId());
+                                channel.sendMessage("Multiqueue is now set to **false**.");
+                            }
                         }
-                        break;
 
-                    case "0":
-                    case "no":
-                    case "off":
-                    case "false":
-                    case "deny":
-                    case "disable":
-                        if (!multiqueueGuilds.contains(guild.getId()))
-                            channel.sendMessage("Multiqueue is already disabled!");
-                        else {
-                            multiqueueGuilds.remove(guild.getId());
-                            channel.sendMessage("Multiqueue now set to **false**.");
-                        }
-                        break;
-
-                    default:
+                    } catch (InvalidArgumentException ex) {
                         channel.sendMessage("Invalid value!");
-                        break;
-                }
+                    }
                 break;
 
             case "play":
@@ -428,10 +450,32 @@ class Listener extends ListenerAdapter {
                         + "    -> nowplaying\n"
                         + "    -> pause - [DJ only]\n"
                         + "    -> stop - [DJ only]\n"
+                        + "    -> shuffle - [DJ only]\n"
                         + "    -> forceskip - [DJ only]\n"
                         + "    -> multiqueue (true/false) - [DJ only]\n"
                         + "    -> reset - [DJ only]\n```");
                 break;
         }
+    }
+
+    private boolean parseInput(String inputArgs) throws InvalidArgumentException {
+        switch (inputArgs.toLowerCase()) {
+            case "1":
+            case "yes":
+            case "on":
+            case "true":
+            case "allow":
+            case "enable":
+                return true;
+
+            case "0":
+            case "no":
+            case "off":
+            case "false":
+            case "deny":
+            case "disable":
+                return false;
+        }
+        throw new IllegalArgumentException("Invalid value for a boolean.");
     }
 }
