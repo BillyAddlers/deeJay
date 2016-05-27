@@ -238,6 +238,7 @@ class Listener extends ListenerAdapter {
                 player = Main.createPlayer(am);
                 am.closeAudioConnection();
                 am.setSendingHandler(player);
+                playlistLoader.remove(guild.getId());
                 multiqueueGuilds.remove(guild.getId());
                 musicQueue.entrySet().removeIf(entry -> entry.getValue().getGuildId().equals(guild.getId()));
                 channel.sendMessage("Completely reset the music player.");
