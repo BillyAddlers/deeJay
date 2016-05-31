@@ -399,9 +399,21 @@ class Listener extends ListenerAdapter {
                 }
 
                 Message playlistStatus = channel.sendMessage("*Processing playlist..*");
-                Playlist playlist = Playlist.getPlaylist(inputArgs);
-                List<AudioSource> sources = new LinkedList<>(playlist.getSources());
 
+                Playlist playlist = null;
+                try {
+                    playlist = Playlist.getPlaylist(inputArgs);
+
+                } catch (NullPointerException ex) {
+                    if (ex.getLocalizedMessage().equals("The YT-DL playlist process resulted in a null or zero-length INFO!")) {
+                        playlistStatus.updateMessage("```\nERROR: That's not a valid playlist URL!```");
+                        return;
+                    } else
+                        ex.printStackTrace();
+                }
+
+                assert playlist != null;
+                List<AudioSource> sources = new LinkedList<>(playlist.getSources());
                 if (sources.size() <= 1) {
                     AudioSource src = new RemoteSource(inputArgs);
                     addSingleSource(src, player, message);
