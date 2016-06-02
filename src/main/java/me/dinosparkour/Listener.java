@@ -71,8 +71,14 @@ class Listener extends ListenerAdapter {
 
             if (!player.isPlaying())
                 player.play();
-        } else
-            channel.sendMessage("```" + srcInfo.getError() + "```");
+        } else {
+            String err = srcInfo.getError();
+            if (err.length() > 1900) {
+                channel.sendMessage("An unexpected error occurred!");
+                System.err.println(err);
+            } else
+                channel.sendMessage("```" + err + "```");
+        }
     }
 
     @Override
@@ -374,9 +380,14 @@ class Listener extends ListenerAdapter {
 
                     channel.sendTyping();
                     AudioSource src = new RemoteSource(inputArgs);
-                    if (src.getInfo().getError() != null)
-                        channel.sendMessage("An error occurred!```\n" + src.getInfo().getError() + "```");
-                    else if (src.getInfo().isLive())
+                    if (src.getInfo().getError() != null) {
+                        String err = src.getInfo().getError();
+                        if (err.length() > 1900) {
+                            System.err.println(err);
+                            channel.sendMessage("An unexpected error occurred!");
+                        } else
+                            channel.sendMessage("An error occurred!```\n" + err + "```");
+                    } else if (src.getInfo().isLive())
                         channel.sendMessage("Cannot play livestreams! Sorry for the inconvenience.");
                     else
                         addSingleSource(src, player, message);
@@ -441,8 +452,14 @@ class Listener extends ListenerAdapter {
                                 audioQueue.add(audioSource);
                                 if (fPlayer.isStopped())
                                     fPlayer.play();
-                            } else
-                                channel.sendMessage("Detected error, skipping 1 source.```\n" + audioInfo.getError() + "```");
+                            } else {
+                                String err = audioInfo.getError();
+                                if (err.length() > 1900) {
+                                    channel.sendMessage("An unexpected error occurred!");
+                                    System.err.println(err);
+                                } else
+                                    channel.sendMessage("Detected error, skipping 1 source.```\n" + err + "```");
+                            }
                         });
                         playlistLoader.remove(guild.getId());
                     });
