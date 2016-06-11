@@ -439,6 +439,7 @@ class Listener extends ListenerAdapter {
 
                     final MusicPlayer fPlayer = player;
                     threadPool.submit(() -> {
+                        long start = System.currentTimeMillis();
                         sources.stream().forEachOrdered(audioSource -> {
                             AudioInfo audioInfo = audioSource.getInfo();
                             if (audioInfo.isLive()) {
@@ -462,6 +463,9 @@ class Listener extends ListenerAdapter {
                             }
                         });
                         playlistLoader.remove(guild.getId());
+                        if (channel.checkPermission(jda.getSelfInfo(), Permission.MESSAGE_MANAGE))
+                            message.deleteMessage();
+                        playlistStatus.updateMessage("Successfully loaded! Time taken: " + (System.currentTimeMillis() - start) / 1000 + " seconds!");
                     });
                 }
                 break;
