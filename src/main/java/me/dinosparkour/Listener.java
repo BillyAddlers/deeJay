@@ -481,12 +481,22 @@ class Listener extends ListenerAdapter {
                         + "    -> queue\n"
                         + "    -> skip\n"
                         + "    -> nowplaying\n"
+                        + "    -> info\n"
                         + "    -> pause - [DJ only]\n"
                         + "    -> stop - [DJ only]\n"
                         + "    -> shuffle - [DJ only]\n"
                         + "    -> forceskip - [DJ only]\n"
                         + "    -> multiqueue (true/false) - [DJ only]\n"
                         + "    -> reset - [DJ only]\n```");
+                break;
+
+            case "status":
+            case "info":
+                channel.sendMessage("__**Player Info:**__\n"
+                        + "Status: *" + (player.isPlaying() ? "PLAYING" : player.isPaused() ? "PAUSED" : "STOPPED") + "*\n"
+                        + "Shuffle: *" + player.isShuffle() + "*\n"
+                        + "Multiqueue: *" + multiqueueGuilds.contains(guild.getId()) + "*\n"
+                        + "Queue Size: *" + player.getAudioQueue().size() + " songs" + (playlistLoader.contains(guild.getId()) ? " (Playlist Loading in progress)" : "") + "*");
                 break;
         }
     }
