@@ -1,5 +1,7 @@
 package me.dinosparkour;
 
+import com.mashape.unirest.http.Unirest;
+import com.mashape.unirest.http.exceptions.UnirestException;
 import net.dv8tion.jda.JDA;
 import net.dv8tion.jda.Permission;
 import net.dv8tion.jda.entities.*;
@@ -80,6 +82,15 @@ class Listener extends ListenerAdapter {
         }
     }
 
+    private static String buildQueue(AudioSource src) {
+        AudioInfo info = src.getInfo();
+        if (info != null) {
+            AudioTimestamp dur = info.getDuration();
+            return "`[" + (dur == null ? "N/A" : dur.getTimestamp()) + "]` " + info.getTitle() + "\n";
+        }
+        return null;
+    }
+
     @Override
     public void onGuildMessageReceived(GuildMessageReceivedEvent e) {
         String NO_DJ = "You need to be a **DJ** to do that!";
@@ -152,13 +163,20 @@ class Listener extends ListenerAdapter {
                 }
 
                 StringBuilder sb = new StringBuilder("__Information about the Queue__ (Entries: " + queue.size() + ")\n\n");
-                for (int i = 0; i < queue.size() && i < 10; i++) {
-                    AudioInfo info = queue.get(i).getInfo();
-                    if (info != null) {
-                        AudioTimestamp dur = info.getDuration();
-                        sb.append("`[").append(dur == null ? "N/A" : dur.getTimestamp())
-                                .append("]` ").append(info.getTitle()).append("\n");
-                    }
+                if (queue.size() <= 10)
+                    for (int i = 0; i < queue.size() && i < 10; i++)
+                        sb.append(buildQueue(queue.get(i)));
+                else {
+                    channel.sendTyping();
+                    StringBuilder body = new StringBuilder();
+                    queue.stream().map(Listener::buildQueue).forEach(body::append);
+                    try {
+                        String response = Unirest.post("http://hastebin.com/documents")
+                                .body(body.deleteCharAt(body.length()-1).toString())
+                                .asJson().getBody().getObject().getString("key");
+                        sb.append("http://hastebin.com/").append(response).append(".txt");
+
+                    } catch (UnirestException ignored) {}
                 }
 
                 boolean error = false;
