@@ -21,7 +21,6 @@ import java.util.concurrent.Executors;
 class Listener extends ListenerAdapter {
 
     static final Map<AudioSource, SongInfo> musicQueue = new HashMap<>();
-    private static final int SKIP_VOTES_REQUIRED = 4;
     private static final Set<String> multiqueueGuilds = new HashSet<>();
     private static final Set<String> playlistLoader = new HashSet<>();
     private final ExecutorService threadPool = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors() + 1);
@@ -226,11 +225,12 @@ class Listener extends ListenerAdapter {
 
                     s.voteSkip(author);
                     int voteCount = s.getVotes();
-                    if (voteCount == SKIP_VOTES_REQUIRED) {
+                    int votesRequired = Math.round(guild.getAudioManager().getConnectedChannel().getUsers().size() / 2);
+                    if (voteCount >= votesRequired) {
                         player.skipToNext();
                         channel.sendMessage("Skipping to the next song.");
                     } else
-                        channel.sendMessage(author.getUsername().replace("`", "\\`") + " has voted to skip the song! **" + voteCount + "/" + SKIP_VOTES_REQUIRED + "**");
+                        channel.sendMessage(author.getUsername().replace("`", "\\`") + " has voted to skip the song! **" + voteCount + "/" + votesRequired + "**");
                 }
                 break;
 
