@@ -8,7 +8,6 @@ import net.dv8tion.jda.player.source.AudioSource;
 import org.json.JSONObject;
 
 import javax.security.auth.login.LoginException;
-import java.io.IOException;
 
 public class Main {
 
@@ -16,8 +15,7 @@ public class Main {
     private static final float DEFAULT_VOLUME = 0.25f;
     static String prefix;
 
-    public static void main(String[] args) throws LoginException, InterruptedException, IOException {
-
+    public static void main(String[] args) throws LoginException {
         JSONObject config = Configurator.getConfig();
         prefix = config.getString("prefix");
         new JDABuilder()
