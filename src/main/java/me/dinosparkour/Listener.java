@@ -483,7 +483,7 @@ class Listener extends ListenerAdapter {
                         playlistLoader.remove(guild.getId());
                         if (channel.checkPermission(jda.getSelfInfo(), Permission.MESSAGE_MANAGE))
                             message.deleteMessage();
-                        playlistStatus.updateMessage("Successfully loaded! Time taken: " + (System.currentTimeMillis() - start) / 1000 + " seconds!");
+                        playlistStatus.updateMessage("Successfully loaded `" + inputArgs + "`! Time taken: " + (System.currentTimeMillis() - start) / 1000 + " seconds");
                     });
                 }
                 break;
