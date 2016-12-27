@@ -257,7 +257,7 @@ public class MusicCommand extends Command {
 
             @Override
             public void loadFailed(FriendlyException exception) {
-                chat.sendMessage("Uh oh! Something went wrong...\nForward this to the dev: ```\n" + exception.getLocalizedMessage() + "```");
+                chat.sendMessage("Uh oh! Something went wrong...```\n" + exception.getLocalizedMessage() + "```");
             }
 
             private void loadSingle(AudioTrack track) {
