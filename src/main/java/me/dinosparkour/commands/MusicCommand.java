@@ -34,6 +34,8 @@ import me.dinosparkour.utils.MessageUtil;
 import net.dv8tion.jda.core.Permission;
 import net.dv8tion.jda.core.entities.Guild;
 import net.dv8tion.jda.core.entities.Member;
+import net.dv8tion.jda.core.events.guild.GuildLeaveEvent;
+import net.dv8tion.jda.core.events.guild.voice.GuildVoiceLeaveEvent;
 import net.dv8tion.jda.core.events.message.MessageReceivedEvent;
 import org.apache.commons.io.FileUtils;
 import org.json.JSONObject;
@@ -44,6 +46,7 @@ import java.util.*;
 
 public class MusicCommand extends Command {
 
+    private static final int PLAYLIST_LIMIT = 200;
     private static final AudioPlayerManager myManager = new DefaultAudioPlayerManager();
     private static final Map<String, Map.Entry<AudioPlayer, TrackManager>> players = new HashMap<>();
 
@@ -160,10 +163,7 @@ public class MusicCommand extends Command {
                         if (!isDj(e.getMember())) {
                             chat.sendMessage("You don't have the required permissions to do that! [DJ role]");
                         } else {
-                            players.remove(guild.getId());
-                            getPlayer(guild).destroy();
-                            getTrackManager(guild).purgeQueue();
-                            guild.getAudioManager().closeAudioConnection();
+                            reset(guild);
                             chat.sendMessage("\uD83D\uDD04 Resetting the music player..");
                         }
                         break;
@@ -201,6 +201,20 @@ public class MusicCommand extends Command {
         return Collections.singletonList("music");
     }
 
+    @Override
+    public void onGuildVoiceLeave(GuildVoiceLeaveEvent event) {
+        TrackManager manager = getTrackManager(event.getGuild());
+        manager.getQueuedTracks().stream()
+                .filter(info -> !info.getTrack().equals(getPlayer(event.getGuild()).getPlayingTrack())
+                        && info.getAuthor().getUser().equals(event.getMember().getUser()))
+                .forEach(manager::remove);
+    }
+
+    @Override
+    public void onGuildLeave(GuildLeaveEvent event) {
+        reset(event.getGuild());
+    }
+
     private void tryToDelete(MessageReceivedEvent e) {
         if (e.getGuild().getSelfMember().hasPermission(e.getTextChannel(), Permission.MESSAGE_MANAGE)) {
             e.getMessage().deleteMessage().queue();
@@ -232,6 +246,13 @@ public class MusicCommand extends Command {
         guild.getAudioManager().setSendingHandler(new AudioPlayerSendHandler(nPlayer));
         players.put(guild.getId(), new AbstractMap.SimpleEntry<>(nPlayer, manager));
         return nPlayer;
+    }
+
+    private void reset(Guild guild) {
+        players.remove(guild.getId());
+        getPlayer(guild).destroy();
+        getTrackManager(guild).purgeQueue();
+        guild.getAudioManager().closeAudioConnection();
     }
 
     private void loadTrack(String identifier, Member author, Command.MessageSender chat) {
@@ -273,8 +294,8 @@ public class MusicCommand extends Command {
             private void loadMulti(AudioPlaylist playlist) {
                 chat.sendEmbed(String.format(QUEUE_TITLE, MessageUtil.userDiscrimSet(author.getUser()), playlist.getTracks().size(), "s"),
                         String.format(QUEUE_DESCRIPTION, DVD, getOrNull(playlist.getName()), "", "", "", ""));
-                for (AudioTrack t : playlist.getTracks()) {
-                    getTrackManager(guild).queue(t, author);
+                for (int i = 0; i < PLAYLIST_LIMIT; i++) {
+                    getTrackManager(guild).queue(playlist.getTracks().get(i), author);
                 }
             }
         });
