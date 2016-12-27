@@ -78,7 +78,7 @@ public class MusicCommand extends Command {
                             chat.sendMessage("No song is being played at the moment! *It's your time to shine..*");
                         } else {
                             AudioTrack track = getPlayer(guild).getPlayingTrack();
-                            chat.sendEmbed("Track me.dinosparkour.Info", String.format(QUEUE_DESCRIPTION, CD, getOrNull(track.getInfo().title),
+                            chat.sendEmbed("Track Info", String.format(QUEUE_DESCRIPTION, CD, getOrNull(track.getInfo().title),
                                     "\n\u23F1 **|>**  " + getTimestamp(track.getPosition() / 1000),
                                     "\n" + MIC, getOrNull(track.getInfo().author),
                                     "\n\uD83C\uDFA7 **|>**  " + MessageUtil.userDiscrimSet(getTrackManager(guild).getTrackInfo(track).getAuthor().getUser())));
@@ -93,7 +93,7 @@ public class MusicCommand extends Command {
                             StringBuilder sb = new StringBuilder();
                             Set<AudioInfo> queue = getTrackManager(guild).getQueuedTracks();
                             queue.forEach(audioInfo -> sb.append(buildQueueMessage(audioInfo)));
-                            chat.sendEmbed("me.dinosparkour.Info about the Queue: (Size - " + queue.size() + ")", sb.length() <= 1960
+                            chat.sendEmbed("Info about the Queue: (Size - " + queue.size() + ")", sb.length() <= 1960
                                     ? "**>** " + sb.toString()
                                     : "[Click here for a detailed list](https://hastebin.com/"
                                     + new JSONObject(Unirest.post("https://hastebin.com/documents").body(sb.toString()).getBody().toString()).getString("key")
