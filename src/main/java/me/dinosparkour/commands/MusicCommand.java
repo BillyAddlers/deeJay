@@ -300,7 +300,7 @@ public class MusicCommand extends Command {
             private void loadMulti(AudioPlaylist playlist) {
                 chat.sendEmbed(String.format(QUEUE_TITLE, MessageUtil.userDiscrimSet(author.getUser()), Math.min(playlist.getTracks().size(), PLAYLIST_LIMIT), "s"),
                         String.format(QUEUE_DESCRIPTION, DVD, getOrNull(playlist.getName()), "", "", "", ""));
-                for (int i = 0; i < PLAYLIST_LIMIT; i++) {
+                for (int i = 0; i < Math.min(playlist.getTracks().size(), PLAYLIST_LIMIT); i++) {
                     getTrackManager(guild).queue(playlist.getTracks().get(i), author);
                 }
             }
