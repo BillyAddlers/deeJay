@@ -35,8 +35,11 @@ import net.dv8tion.jda.core.Permission;
 import net.dv8tion.jda.core.entities.Guild;
 import net.dv8tion.jda.core.entities.Member;
 import net.dv8tion.jda.core.events.message.MessageReceivedEvent;
+import org.apache.commons.io.FileUtils;
 import org.json.JSONObject;
 
+import java.io.File;
+import java.io.IOException;
 import java.util.*;
 
 public class MusicCommand extends Command {
@@ -50,6 +53,7 @@ public class MusicCommand extends Command {
 
     private static final String QUEUE_TITLE = "__%s has added %d new track%s to the Queue:__";
     private static final String QUEUE_DESCRIPTION = "%s **|>**  %s\n%s\n%s %s\n%s";
+    private static final String QUEUE_INFO = "Info about the Queue: (Size - %d)";
 
     public MusicCommand() {
         AudioSourceManagers.registerRemoteSources(myManager);
@@ -93,11 +97,28 @@ public class MusicCommand extends Command {
                             StringBuilder sb = new StringBuilder();
                             Set<AudioInfo> queue = getTrackManager(guild).getQueuedTracks();
                             queue.forEach(audioInfo -> sb.append(buildQueueMessage(audioInfo)));
-                            chat.sendEmbed("Info about the Queue: (Size - " + queue.size() + ")", sb.length() <= 1960
-                                    ? "**>** " + sb.toString()
-                                    : "[Click here for a detailed list](https://hastebin.com/"
-                                    + new JSONObject(Unirest.post("https://hastebin.com/documents").body(sb.toString()).getBody().toString()).getString("key")
-                                    + ".txt)");
+                            String embedTitle = String.format(QUEUE_INFO, queue.size());
+
+                            if (sb.length() <= 1960) {
+                                chat.sendEmbed(embedTitle, "**>** " + sb.toString());
+                            } else if (sb.length() <= 20000) {
+                                chat.sendEmbed(embedTitle, "[Click here for a detailed list](https://hastebin.com/"
+                                        + new JSONObject(Unirest.post("https://hastebin.com/documents").body(sb.toString()).getBody().toString()).getString("key")
+                                        + ".txt)");
+                            } else {
+                                e.getChannel().sendTyping().queue();
+                                File qFile = new File("queue.txt");
+                                try {
+                                    FileUtils.write(qFile, sb.toString(), "UTF-8", false);
+                                    e.getChannel().sendFile(qFile, qFile.getName(), null).queue();
+                                } catch (IOException ex) {
+                                    ex.printStackTrace();
+                                }
+
+                                if (!qFile.delete()) { // Delete the queue file after we're done
+                                    qFile.deleteOnExit();
+                                }
+                            }
                         }
                         break;
 
