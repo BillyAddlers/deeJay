@@ -1,17 +1,21 @@
 plugins {
-    id 'com.github.johnrengelman.shadow' version '1.2.3'
+    id 'com.github.johnrengelman.shadow' version '1.2.4'
     id 'application'
 }
 
 repositories {
     jcenter()
+    maven {
+        url 'http://maven.sedmelluq.com'
+    }
 }
 
 dependencies {
-    compile 'net.dv8tion:jda-player:0.2.1_8'
-    compile 'net.dv8tion:JDA:2.1.0_297'
+    compile 'net.dv8tion:JDA:3.0.BETA2_112'
+    compile 'com.sedmelluq:lavaplayer:1.1.30'
 }
 
 //noinspection GroovyUnusedAssignment
-mainClassName = 'me.dinosparkour.Main'
+mainClassName = 'me.dinosparkour.Bot'
 compileJava.options.encoding = 'UTF-8'
+shadowJar.archiveName = 'deeJay.jar'
