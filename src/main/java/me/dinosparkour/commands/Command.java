@@ -19,6 +19,7 @@ package me.dinosparkour.commands;
 import me.dinosparkour.Info;
 import me.dinosparkour.utils.MessageUtil;
 import net.dv8tion.jda.core.EmbedBuilder;
+import net.dv8tion.jda.core.Permission;
 import net.dv8tion.jda.core.entities.ChannelType;
 import net.dv8tion.jda.core.entities.Message;
 import net.dv8tion.jda.core.entities.MessageChannel;
@@ -115,7 +116,11 @@ abstract class Command extends ListenerAdapter {
         }
 
         void sendEmbed(String title, String description) {
-            MessageUtil.sendMessage(new EmbedBuilder().setTitle(title).setDescription(description).build(), event.getChannel());
+            if (event.isFromType(ChannelType.TEXT) && event.getMember().hasPermission(event.getTextChannel(), Permission.MESSAGE_EMBED_LINKS)) {
+                MessageUtil.sendMessage(new EmbedBuilder().setTitle(title).setDescription(description).build(), event.getChannel());
+            } else {
+                sendMessage("Please give the bot permissions to `EMBED LINKS`.");
+            }
         }
 
         void sendPrivateMessageToUser(String content, User user) {
