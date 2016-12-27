@@ -73,7 +73,7 @@ public class MusicCommand extends Command {
             case 1:
                 switch (args[0].toLowerCase()) {
                     case "help":
-                    case "me/dinosparkour/commands":
+                    case "commands":
                         sendHelpMessage(chat);
                         break;
 
