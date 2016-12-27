@@ -184,8 +184,12 @@ public class MusicCommand extends Command {
                 String input = String.join(" ", Arrays.copyOfRange(args, 1, args.length));
                 switch (args[0].toLowerCase()) {
                     case "play": // Play a track
-                        loadTrack(input, e.getMember(), chat);
-                        tryToDelete(e);
+                        if (e.getMember().getVoiceState().getChannel() == null) {
+                            chat.sendMessage("You are not in a Voice Channel!");
+                        } else {
+                            loadTrack(input, e.getMember(), chat);
+                            tryToDelete(e);
+                        }
                         break;
                 }
                 break;
