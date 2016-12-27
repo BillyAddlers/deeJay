@@ -16,7 +16,9 @@
 
 package me.dinosparkour.commands;
 
+import com.mashape.unirest.http.HttpResponse;
 import com.mashape.unirest.http.Unirest;
+import com.mashape.unirest.http.exceptions.UnirestException;
 import com.sedmelluq.discord.lavaplayer.player.AudioLoadResultHandler;
 import com.sedmelluq.discord.lavaplayer.player.AudioPlayer;
 import com.sedmelluq.discord.lavaplayer.player.AudioPlayerManager;
@@ -37,11 +39,8 @@ import net.dv8tion.jda.core.entities.Member;
 import net.dv8tion.jda.core.events.guild.GuildLeaveEvent;
 import net.dv8tion.jda.core.events.guild.voice.GuildVoiceLeaveEvent;
 import net.dv8tion.jda.core.events.message.MessageReceivedEvent;
-import org.apache.commons.io.FileUtils;
 import org.json.JSONObject;
 
-import java.io.File;
-import java.io.IOException;
 import java.util.*;
 
 public class MusicCommand extends Command {
@@ -104,10 +103,16 @@ public class MusicCommand extends Command {
 
                             if (sb.length() <= 1960) {
                                 chat.sendEmbed(embedTitle, "**>** " + sb.toString());
-                            } else if (sb.length() <= 20000) {
-                                chat.sendEmbed(embedTitle, "[Click here for a detailed list](https://hastebin.com/"
-                                        + new JSONObject(Unirest.post("https://hastebin.com/documents").body(sb.toString()).getBody().toString()).getString("key")
-                                        + ".txt)");
+                            } else /* if (sb.length() <= 20000) */ {
+                                try {
+                                    sb.setLength(sb.length() - 1);
+                                    HttpResponse response = Unirest.post("https://hastebin.com/documents").body(sb.toString()).asString();
+                                    chat.sendEmbed(embedTitle, "[Click here for a detailed list](https://hastebin.com/"
+                                            + new JSONObject(response.getBody().toString()).getString("key") + ")");
+                                } catch (UnirestException ex) {
+                                    ex.printStackTrace();
+                                }
+                                /*
                             } else {
                                 e.getChannel().sendTyping().queue();
                                 File qFile = new File("queue.txt");
@@ -121,6 +126,7 @@ public class MusicCommand extends Command {
                                 if (!qFile.delete()) { // Delete the queue file after we're done
                                     qFile.deleteOnExit();
                                 }
+                                */
                             }
                         }
                         break;
