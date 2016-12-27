@@ -116,7 +116,7 @@ abstract class Command extends ListenerAdapter {
         }
 
         void sendEmbed(String title, String description) {
-            if (event.isFromType(ChannelType.TEXT) && event.getMember().hasPermission(event.getTextChannel(), Permission.MESSAGE_EMBED_LINKS)) {
+            if (event.isFromType(ChannelType.TEXT) && event.getGuild().getSelfMember().hasPermission(event.getTextChannel(), Permission.MESSAGE_EMBED_LINKS)) {
                 MessageUtil.sendMessage(new EmbedBuilder().setTitle(title).setDescription(description).build(), event.getChannel());
             } else {
                 sendMessage("Please give the bot permissions to `EMBED LINKS`.");
