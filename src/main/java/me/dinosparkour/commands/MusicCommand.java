@@ -209,6 +209,9 @@ public class MusicCommand extends Command {
 
     @Override
     public void onGuildVoiceLeave(GuildVoiceLeaveEvent event) {
+        if (!players.containsKey(event.getGuild().getId()))
+            return; //Guild doesn't have a music player
+
         TrackManager manager = getTrackManager(event.getGuild());
         manager.getQueuedTracks().stream()
                 .filter(info -> !info.getTrack().equals(getPlayer(event.getGuild()).getPlayingTrack())
