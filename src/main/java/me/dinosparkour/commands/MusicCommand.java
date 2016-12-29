@@ -142,7 +142,7 @@ public class MusicCommand extends Command {
                                 chat.sendMessage("\u26A0 You've already voted to skip this song!");
                             } else {
                                 int votes = info.getSkips();
-                                if (votes <= 3) { // Skip on 4th vote
+                                if (votes >= 3) { // Skip on 4th vote
                                     getPlayer(guild).stopTrack();
                                     chat.sendMessage("\u23E9 Skipping current track.");
                                 } else {
