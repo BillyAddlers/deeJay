@@ -342,13 +342,14 @@ public class MusicCommand extends Command {
 
     private void sendHelpMessage(MessageSender chat) {
         chat.sendEmbed("deeJay by dinos#0649", MessageUtil.stripFormatting(Info.PREFIX) + "music\n"
-                + "         -> play [url]    - Load a song or a playlist\n"
-                + "         -> queue          - View the current queue\n"
-                + "         -> skip              - Cast a vote to skip the current track\n"
-                + "         -> current        - Display info related to the current track\n"
-                + "         -> forceskip**\\***   - Force a skip\n"
-                + "         -> shuffle**\\***       - Shuffle the queue\n"
-                + "         -> reset**\\***          - Reset the music player\n\n"
+                + "         -> play [url]           - Load a song or a playlist\n"
+                + "         -> ytplay [query]  - Search YouTube for a video and load it\n"
+                + "         -> queue                 - View the current queue\n"
+                + "         -> skip                     - Cast a vote to skip the current track\n"
+                + "         -> current               - Display info related to the current track\n"
+                + "         -> forceskip**\\***          - Force a skip\n"
+                + "         -> shuffle**\\***              - Shuffle the queue\n"
+                + "         -> reset**\\***                 - Reset the music player\n\n"
                 + "Commands with an asterisk**\\*** require the __DJ Role__"
         );
     }
