@@ -36,6 +36,7 @@ import me.dinosparkour.utils.MessageUtil;
 import net.dv8tion.jda.core.Permission;
 import net.dv8tion.jda.core.entities.Guild;
 import net.dv8tion.jda.core.entities.Member;
+import net.dv8tion.jda.core.entities.Message;
 import net.dv8tion.jda.core.events.guild.GuildLeaveEvent;
 import net.dv8tion.jda.core.events.guild.voice.GuildVoiceLeaveEvent;
 import net.dv8tion.jda.core.events.message.MessageReceivedEvent;
@@ -147,8 +148,8 @@ public class MusicCommand extends Command {
                                     chat.sendMessage("\u23E9 Skipping current track.");
                                 } else {
                                     info.addSkip(e.getAuthor());
+                                    tryToDelete(e.getMessage());
                                     chat.sendMessage("**" + MessageUtil.userDiscrimSet(e.getAuthor()) + "** has voted to skip this track! [" + (votes + 1) + "/4]");
-                                    tryToDelete(e);
                                 }
                             }
                         }
@@ -189,13 +190,12 @@ public class MusicCommand extends Command {
             default:
                 String input = String.join(" ", Arrays.copyOfRange(args, 1, args.length));
                 switch (args[0].toLowerCase()) {
+                    case "ytplay": // Query YouTube for a music video
+                        input = "ytsearch: " + input;
+                    // no break;
+
                     case "play": // Play a track
-                        if (e.getMember().getVoiceState().getChannel() == null) {
-                            chat.sendMessage("You are not in a Voice Channel!");
-                        } else {
-                            loadTrack(input, e.getMember(), chat);
-                            tryToDelete(e);
-                        }
+                        loadTrack(input, e.getMember(), e.getMessage(), chat);
                         break;
                 }
                 break;
@@ -224,9 +224,9 @@ public class MusicCommand extends Command {
         reset(event.getGuild());
     }
 
-    private void tryToDelete(MessageReceivedEvent e) {
-        if (e.getGuild().getSelfMember().hasPermission(e.getTextChannel(), Permission.MESSAGE_MANAGE)) {
-            e.getMessage().deleteMessage().queue();
+    private void tryToDelete(Message m) {
+        if (m.getGuild().getSelfMember().hasPermission(m.getTextChannel(), Permission.MESSAGE_MANAGE)) {
+            m.deleteMessage().queue();
         }
     }
 
@@ -264,10 +264,16 @@ public class MusicCommand extends Command {
         guild.getAudioManager().closeAudioConnection();
     }
 
-    private void loadTrack(String identifier, Member author, Command.MessageSender chat) {
+    private void loadTrack(String identifier, Member author, Message msg, Command.MessageSender chat) {
+        if (author.getVoiceState().getChannel() == null) {
+            chat.sendMessage("You are not in a Voice Channel!");
+            return;
+        }
+
         Guild guild = author.getGuild();
         getPlayer(guild); // Make sure this guild has a player.
 
+        msg.getTextChannel().sendTyping().queue();
         myManager.loadItemOrdered(guild, identifier, new AudioLoadResultHandler() {
 
             @Override
@@ -279,6 +285,8 @@ public class MusicCommand extends Command {
             public void playlistLoaded(AudioPlaylist playlist) {
                 if (playlist.getSelectedTrack() != null) {
                     loadSingle(playlist.getSelectedTrack());
+                } else if (playlist.isSearchResult()) {
+                    loadSingle(playlist.getTracks().get(0));
                 } else {
                     loadMulti(playlist);
                 }
@@ -308,6 +316,7 @@ public class MusicCommand extends Command {
                 }
             }
         });
+        tryToDelete(msg);
     }
 
     private boolean isDj(Member member) {
