@@ -57,6 +57,7 @@ public class MusicCommand extends Command {
     private static final String QUEUE_TITLE = "__%s has added %d new track%s to the Queue:__";
     private static final String QUEUE_DESCRIPTION = "%s **|>**  %s\n%s\n%s %s\n%s";
     private static final String QUEUE_INFO = "Info about the Queue: (Size - %d)";
+    private static final String ERROR = "Error while loading \"%s\"";
 
     public MusicCommand() {
         AudioSourceManagers.registerRemoteSources(myManager);
@@ -278,42 +279,34 @@ public class MusicCommand extends Command {
 
             @Override
             public void trackLoaded(AudioTrack track) {
-                loadSingle(track);
-            }
-
-            @Override
-            public void playlistLoaded(AudioPlaylist playlist) {
-                if (playlist.getSelectedTrack() != null) {
-                    loadSingle(playlist.getSelectedTrack());
-                } else if (playlist.isSearchResult()) {
-                    loadSingle(playlist.getTracks().get(0));
-                } else {
-                    loadMulti(playlist);
-                }
-            }
-
-            @Override
-            public void noMatches() {
-                chat.sendMessage("\u26D4 **Invalid input!**");
-            }
-
-            @Override
-            public void loadFailed(FriendlyException exception) {
-                chat.sendMessage("Uh oh! Something went wrong...```\n" + exception.getLocalizedMessage() + "```");
-            }
-
-            private void loadSingle(AudioTrack track) {
                 chat.sendEmbed(String.format(QUEUE_TITLE, MessageUtil.userDiscrimSet(author.getUser()), 1, ""),
                         String.format(QUEUE_DESCRIPTION, CD, getOrNull(track.getInfo().title), "", MIC, getOrNull(track.getInfo().author), ""));
                 getTrackManager(guild).queue(track, author);
             }
 
-            private void loadMulti(AudioPlaylist playlist) {
-                chat.sendEmbed(String.format(QUEUE_TITLE, MessageUtil.userDiscrimSet(author.getUser()), Math.min(playlist.getTracks().size(), PLAYLIST_LIMIT), "s"),
-                        String.format(QUEUE_DESCRIPTION, DVD, getOrNull(playlist.getName()), "", "", "", ""));
-                for (int i = 0; i < Math.min(playlist.getTracks().size(), PLAYLIST_LIMIT); i++) {
-                    getTrackManager(guild).queue(playlist.getTracks().get(i), author);
+            @Override
+            public void playlistLoaded(AudioPlaylist playlist) {
+                if (playlist.getSelectedTrack() != null) {
+                    trackLoaded(playlist.getSelectedTrack());
+                } else if (playlist.isSearchResult()) {
+                    trackLoaded(playlist.getTracks().get(0));
+                } else {
+                    chat.sendEmbed(String.format(QUEUE_TITLE, MessageUtil.userDiscrimSet(author.getUser()), Math.min(playlist.getTracks().size(), PLAYLIST_LIMIT), "s"),
+                            String.format(QUEUE_DESCRIPTION, DVD, getOrNull(playlist.getName()), "", "", "", ""));
+                    for (int i = 0; i < Math.min(playlist.getTracks().size(), PLAYLIST_LIMIT); i++) {
+                        getTrackManager(guild).queue(playlist.getTracks().get(i), author);
+                    }
                 }
+            }
+
+            @Override
+            public void noMatches() {
+                chat.sendEmbed(String.format(ERROR, identifier), "\u26A0 No playable tracks were found.");
+            }
+
+            @Override
+            public void loadFailed(FriendlyException exception) {
+                chat.sendEmbed(String.format(ERROR, identifier), "\u26D4 " + exception.getLocalizedMessage());
             }
         });
         tryToDelete(msg);

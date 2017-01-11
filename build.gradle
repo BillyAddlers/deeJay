@@ -5,14 +5,11 @@ plugins {
 
 repositories {
     jcenter()
-    maven {
-        url 'http://maven.sedmelluq.com'
-    }
 }
 
 dependencies {
-    compile 'net.dv8tion:JDA:3.0.BETA2_118'
-    compile 'com.sedmelluq:lavaplayer:1.1.36'
+    compile 'net.dv8tion:JDA:3.0.BETA2_120'
+    compile 'com.sedmelluq:lavaplayer:1.1.38'
     compile 'org.slf4j:slf4j-nop:1.7.22'
 }
 
