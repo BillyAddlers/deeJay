@@ -227,7 +227,7 @@ public class MusicCommand extends Command {
 
     private void tryToDelete(Message m) {
         if (m.getGuild().getSelfMember().hasPermission(m.getTextChannel(), Permission.MESSAGE_MANAGE)) {
-            m.deleteMessage().queue();
+            m.delete().queue();
         }
     }
 
