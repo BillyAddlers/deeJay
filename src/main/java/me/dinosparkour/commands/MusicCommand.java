@@ -87,7 +87,7 @@ public class MusicCommand extends Command {
                         } else {
                             AudioTrack track = getPlayer(guild).getPlayingTrack();
                             chat.sendEmbed("Track Info", String.format(QUEUE_DESCRIPTION, CD, getOrNull(track.getInfo().title),
-                                    "\n\u23F1 **|>**  " + getTimestamp(track.getPosition() / 1000),
+                                    "\n\u23F1 **|>** `[ " + getTimestamp(track.getPosition()) + " / " + getTimestamp(track.getInfo().length) + " ]`",
                                     "\n" + MIC, getOrNull(track.getInfo().author),
                                     "\n\uD83C\uDFA7 **|>**  " + MessageUtil.userDiscrimSet(getTrackManager(guild).getTrackInfo(track).getAuthor().getUser())));
                         }
@@ -350,16 +350,17 @@ public class MusicCommand extends Command {
     private String buildQueueMessage(AudioInfo info) {
         AudioTrackInfo trackInfo = info.getTrack().getInfo();
         String title = trackInfo.title;
-        long length = trackInfo.length / 1000;
-        return getTimestamp(length) + " " + title + "\n";
+        long length = trackInfo.length;
+        return "`[ " + getTimestamp(length) + " ]` " + title + "\n";
     }
 
-    private String getTimestamp(long seconds) {
+    private String getTimestamp(long milis) {
+        long seconds = milis / 1000;
         long hours = Math.floorDiv(seconds, 3600);
         seconds = seconds - (hours * 3600);
         long mins = Math.floorDiv(seconds, 60);
         seconds = seconds - (mins * 60);
-        return "`[ " + (hours == 0 ? "" : hours + ":") + String.format("%02d", mins) + ":" + String.format("%02d", seconds) + " ]`";
+        return (hours == 0 ? "" : hours + ":") + String.format("%02d", mins) + ":" + String.format("%02d", seconds);
     }
 
     private String getOrNull(String s) {
