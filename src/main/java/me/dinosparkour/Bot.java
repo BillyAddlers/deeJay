@@ -32,8 +32,8 @@ public class Bot {
 
     public static void main(String[] args) throws LoginException, RateLimitedException {
         new JDABuilder(AccountType.BOT)
-                .addListener(new EvalCommand()) // Register the author-exclusive eval command
-                .addListener(new MusicCommand()) // Register all music related subcommands
+                .addEventListener(new EvalCommand()) // Register the author-exclusive eval command
+                .addEventListener(new MusicCommand()) // Register all music related subcommands
                 .setToken(Info.TOKEN) // Set the Authentication Token
                 .setBulkDeleteSplittingEnabled(false) // Performance reasons
                 .setEventManager(new ThreadedEventManager()) // Allow for simultaneous command processing
