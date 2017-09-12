@@ -23,6 +23,7 @@ import net.dv8tion.jda.core.JDABuilder;
 import net.dv8tion.jda.core.events.Event;
 import net.dv8tion.jda.core.exceptions.RateLimitedException;
 import net.dv8tion.jda.core.hooks.InterfacedEventManager;
+import net.dv8tion.jda.core.requests.SessionReconnectQueue;
 
 import javax.security.auth.login.LoginException;
 import java.util.concurrent.ExecutorService;
@@ -37,6 +38,7 @@ public class Bot {
                 .setToken(Info.TOKEN) // Set the Authentication Token
                 .setBulkDeleteSplittingEnabled(false) // Performance reasons
                 .setEventManager(new ThreadedEventManager()) // Allow for simultaneous command processing
+                .setReconnectQueue(new SessionReconnectQueue()) // Let JDA handle reconnects
                 .buildAsync(); // Finally establish a connection to Discord's servers!
     }
 

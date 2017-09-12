@@ -1,19 +1,26 @@
 plugins {
     id 'com.github.johnrengelman.shadow' version '1.2.4'
     id 'application'
+    id 'java'
 }
+
+sourceCompatibility = 1.8
+group 'DinosParkour'
+shadowJar.archiveName = 'deeJay.jar'
 
 repositories {
     jcenter()
 }
 
 dependencies {
-    compile 'net.dv8tion:JDA:3.0.0_175'
-    compile 'com.sedmelluq:lavaplayer:1.2.36'
-    compile 'org.slf4j:slf4j-nop:1.7.24'
+    compile 'com.sedmelluq:lavaplayer:1.2.43'
+    compile 'org.slf4j:slf4j-nop:1.7.25'
+    compile 'com.mashape.unirest:unirest-java:1.4.9'
+    compile 'net.dv8tion:JDA:3.3.0_265'
 }
 
-//noinspection GroovyUnusedAssignment
-mainClassName = 'me.dinosparkour.Bot'
-compileJava.options.encoding = 'UTF-8'
-shadowJar.archiveName = 'deeJay.jar'
+
+compileJava {
+    options.encoding = 'UTF-8'
+    mainClassName = 'me.dinosparkour.Bot'
+}

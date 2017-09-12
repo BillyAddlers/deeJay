@@ -26,7 +26,6 @@ import net.dv8tion.jda.core.entities.MessageChannel;
 import net.dv8tion.jda.core.entities.User;
 import net.dv8tion.jda.core.events.message.MessageReceivedEvent;
 import net.dv8tion.jda.core.hooks.ListenerAdapter;
-import org.apache.commons.lang3.exception.ExceptionUtils;
 
 import java.util.List;
 
@@ -69,7 +68,7 @@ abstract class Command extends ListenerAdapter {
                 ex.printStackTrace();
                 String msg = "User: **" + MessageUtil.userDiscrimSet(e.getAuthor())
                         + "**\nMessage:\n*" + MessageUtil.stripFormatting(e.getMessage().getContent())
-                        + "*\n\nStackTrace:```java\n" + ExceptionUtils.getStackTrace(ex) + "```";
+                        + "*\n\nError:```java\n" + ex.getMessage() + "```";
                 if (msg.length() <= 2000) {
                     chat.sendPrivateMessageToUser(msg, e.getJDA().getUserById(Info.AUTHOR_ID));
                 }
