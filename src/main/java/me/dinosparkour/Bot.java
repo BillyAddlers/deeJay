@@ -21,9 +21,7 @@ import me.dinosparkour.commands.MusicCommand;
 import net.dv8tion.jda.core.AccountType;
 import net.dv8tion.jda.core.JDABuilder;
 import net.dv8tion.jda.core.events.Event;
-import net.dv8tion.jda.core.exceptions.RateLimitedException;
 import net.dv8tion.jda.core.hooks.InterfacedEventManager;
-import net.dv8tion.jda.core.requests.SessionReconnectQueue;
 
 import javax.security.auth.login.LoginException;
 import java.util.concurrent.ExecutorService;
@@ -31,14 +29,13 @@ import java.util.concurrent.Executors;
 
 public class Bot {
 
-    public static void main(String[] args) throws LoginException, RateLimitedException {
+    public static void main(String[] args) throws LoginException {
         new JDABuilder(AccountType.BOT)
                 .addEventListener(new EvalCommand()) // Register the author-exclusive eval command
                 .addEventListener(new MusicCommand()) // Register all music related subcommands
                 .setToken(Info.TOKEN) // Set the Authentication Token
                 .setBulkDeleteSplittingEnabled(false) // Performance reasons
                 .setEventManager(new ThreadedEventManager()) // Allow for simultaneous command processing
-                .setReconnectQueue(new SessionReconnectQueue()) // Let JDA handle reconnects
                 .buildAsync(); // Finally establish a connection to Discord's servers!
     }
 

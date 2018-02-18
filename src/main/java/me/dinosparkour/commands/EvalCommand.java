@@ -41,7 +41,7 @@ public class EvalCommand extends Command {
 
     @Override
     public void executeCommand(String[] args, MessageReceivedEvent e, Command.MessageSender chat) {
-        String allArgs = e.getMessage().getContent();
+        String allArgs = e.getMessage().getContentDisplay();
         if (allArgs.contains(" ")) {
             allArgs = allArgs.substring(allArgs.indexOf(' ')).trim();
         }

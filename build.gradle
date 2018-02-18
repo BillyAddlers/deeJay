@@ -13,10 +13,10 @@ repositories {
 }
 
 dependencies {
-    compile 'com.sedmelluq:lavaplayer:1.2.43'
+    compile 'com.sedmelluq:lavaplayer:1.2.51'
     compile 'org.slf4j:slf4j-nop:1.7.25'
     compile 'com.mashape.unirest:unirest-java:1.4.9'
-    compile 'net.dv8tion:JDA:3.3.0_265'
+    compile 'net.dv8tion:JDA:3.5.1_339'
 }
 
 
